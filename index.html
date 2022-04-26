@@ -6,17 +6,45 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 	<link rel="stylesheet" href="assets/css/main.css" />
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+	<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+	<script type="text/javascript">
+		(function () {
+			// https://dashboard.emailjs.com/admin/account
+			emailjs.init('CZ0JVjk6zSn-lNZWf');
+		})();
+	</script>
+	<script type="text/javascript">
+		window.onload = function () {
+			document.getElementById('contact-form').addEventListener('submit', function (event) {
+				event.preventDefault();
+				// generate a five digit number for the contact_number variable
+				this.contact_number.value = Math.random() * 100000 | 0;
+
+				// these IDs from the previous steps
+				emailjs.sendForm('contact_github_io', 'template_github', this)
+					.then(function () {
+						console.log('成功寄出郵件！');
+						alert("耶！感謝你的填寫，我會盡快回覆！");
+						const form = document.getElementById('contact-form');
+						form.reset();
+					}, function (error) {
+						console.log('郵件寄出失敗：', error);
+						alert("嗚嗚嗚！好像發生了錯誤，你可能要再試一次或以其他方式找到我。");
+					});
+			});
+		}
+	</script>
 </head>
 
 <body class="is-preload">
-
 	<!-- Header -->
 	<section id="header">
 		<header>
 			<span class="image avatar"><img src="images/avatar.jpeg" alt="" /></span>
 			<h1 id="logo"><a href="#">Brian Chou</a></h1>
 			<p>慵懶的躺躺<br />
-			一定是世界上最幸福的事吧</p>
+				一定是世界上最幸福的事吧</p>
 		</header>
 		<nav id="nav">
 			<ul>
@@ -109,8 +137,9 @@
 			<section id="four">
 				<div class="container">
 					<h3>聯絡我</h3>
-					<p>（這個功能還在努力中）歡迎填以下表單來與我聯繫</p>
-					<form method="post" action="#">
+					<p>歡迎填以下表單來與我聯繫</p>
+					<form id="contact-form">
+						<input type="hidden" name="contact_number">
 						<div class="row gtr-uniform">
 							<div class="col-6 col-12-xsmall"><input type="text" name="name" id="name"
 									placeholder="你的名字" /></div>
@@ -121,8 +150,13 @@
 							<div class="col-12"><textarea name="message" id="message" placeholder="想跟我說的話"
 									rows="6"></textarea></div>
 							<div class="col-12">
+								<div class="g-recaptcha" data-sitekey="6Lcx8KAfAAAAAGlJnOeEHTqRcEvyDhSGIB_Vxu9a"></div>
+							</div>
+							<div class="col-12">
 								<ul class="actions">
-									<li><input type="submit" class="primary" value="發送訊息" /></li>
+									<li><input type="submit" class="primary" value="發送訊息"
+											data-sitekey="6LdFr6AfAAAAAKNNMlsYhR046vs72NW_bz5Du60X"
+											data-callback='onSubmit' /></li>
 									<li><input type="reset" value="清除內容" /></li>
 								</ul>
 							</div>
@@ -141,7 +175,7 @@
 			<div class="container">
 				<ul class="copyright">
 					<li>&copy;
-						<script>document.write(new Date().getFullYear());</script> 
+						<script>document.write(new Date().getFullYear());</script>
 						Brian Chou. All rights reserved.
 					</li>
 				</ul>
