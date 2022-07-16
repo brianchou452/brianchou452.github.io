@@ -59,10 +59,10 @@
 		</header>
 		<nav id="nav">
 			<ul>
-				<li><a href="#one" class="active">關於我</a></li>
-				<li><a href="#two">喜歡的事</a></li>
-				<li><a href="#three">做過的事</a></li>
-				<li><a href="#four">聯絡我</a></li>
+				<li><a href="#關於我" class="active">關於我</a></li>
+				<li><a href="#喜歡的事">喜歡的事</a></li>
+				<li><a href="#做過的事">做過的事</a></li>
+				<li><a href="#聯絡我">聯絡我</a></li>
 			</ul>
 		</nav>
 		<footer>
@@ -81,8 +81,7 @@
 		<!-- Main -->
 		<div id="main">
 
-			<!-- One -->
-			<section id="one">
+			<section id="關於我">
 				<div class="image main" data-position="center">
 					<img src="images/banner.svg" alt="" />
 				</div>
@@ -93,15 +92,16 @@
 							我叫 Brian 也可以叫我海獺，<br>
 							很高興認識你！</p>
 					</header>
-					<p>這裡要放我的自我介紹文，但我還想不到，有人要幫幫我嘛🥺</p>
+					<br> <!-- 排版用 -->
+					<!-- <p>這裡要放我的自我介紹文，但我還想不到，有人要幫幫我嘛🥺</p> -->
 				</div>
 			</section>
 
-			<!-- Two -->
-			<section id="two">
+			<section id="喜歡的事">
 				<div class="container">
 					<h3>喜歡的事</h3>
-					<p>這裡預計要放我喜歡做的事？或是其他？目前沒有想法😢</p>
+					<br> <!-- 排版用 -->
+					<!-- <p>這裡預計要放我喜歡做的事？或是其他？目前沒有想法😢</p> -->
 					<ul class="feature-icons">
 						<li class="icon solid fa-code">研究奇怪的東西</li>
 						<li class="icon solid fa-cubes">滑手機</li>
@@ -113,50 +113,69 @@
 				</div>
 			</section>
 
-			<!-- Three -->
-			<section id="three">
+			<section id="做過的事">
 				<div class="container">
 					<h3>那些我做過的事</h3>
 					<p>這裡放了我做過的專案、作品，歡迎來欣賞！！</p>
 					<div class="features">
 						<article>
-							<a href="#" class="image"><img src="images/pic01.jpg" alt="" /></a>
+							<a href="#" class="image"><img src="images/訂餐系統.png" alt="" /></a>
 							<div class="inner">
-								<h4>這是第一項</h4>
-								<p>這是內文，不過目前難產，要再等偶一下下</p>
+								<h4>校園訂餐系統</h4>
+								<p>顧名思義就是一個訂餐系統！<br>
+									這項專案是和高中學弟妹一起完成的，<br>
+									他有這些功能：<br>
+									1. 訂餐<br>
+									2. 查詢/取消/管理訂餐資料<br>
+									3. 列印訂餐標籤，方便福利社阿姨整理便當<br>
+									4. 公告系統<br>
+									5. 管理員可以禁用違反規定的使用者<br>
+								</p>
 							</div>
 						</article>
 						<article>
-							<a href="#" class="image"><img src="images/pic02.jpg" alt="" /></a>
+							<a href="#" class="image"><img src="images/排課系統.png" alt="" /></a>
 							<div class="inner">
-								<h4>這是第二項</h4>
-								<p>這是內文，不過目前難產，要再等偶一下下</p>
+								<h4>排課系統</h4>
+								<p>由於學校的校務系統沒有提供預先排課的功能，要查詢有什麼課程
+									也比較不方便，剛好看到別人做過類似的專案變修改其程式碼，並
+									撰寫新的爬蟲程式，讓我們學校的學生在排課時更方便，終於不用
+									在眼巴巴地看著別的學校有好用的系統了！<br>
+									有興趣的點 <a href="https://utaipeiwu.web.app/" target="_blank">這裡</a>
+									去看看吧！
+								</p>
 							</div>
 						</article>
 						<article>
-							<a href="#" class="image"><img src="images/pic03.jpg" alt="" /></a>
+							<a href="#" class="image"><img src="images/Tissue Cover.svg" alt="" /></a>
 							<div class="inner">
-								<h4>這是第三項</h4>
-								<p>這是內文，不過目前難產，要再等偶一下下</p>
+								<h4>Tissue 日常小工具 &nbsp;App</h4>
+								<p>這是一款整合性高的小工具APP，總共五種幫助你自律的小工具:喝水時鐘、
+									番茄鐘 & TO DO LIST、今日課表、正/倒數日。<br>
+									點
+									<a href="https://appdistribution.firebase.dev/i/43cd135dd7b04c7d"
+										target="_blank">這裡</a>
+									下載玩玩吧！
+								</p>
 							</div>
 						</article>
 					</div>
 				</div>
 			</section>
 
-			<!-- Four -->
-			<section id="four">
+			<section id="聯絡我">
 				<div class="container">
 					<h3>聯絡我</h3>
 					<p>歡迎填以下表單來與我聯繫</p>
 					<form id="contact-form">
 						<input type="hidden" name="contact_number">
 						<div class="row gtr-uniform">
-							<div class="col-6 col-12-xsmall"><input type="text" name="name" id="name"
-									placeholder="你的名字" /></div>
+							<div class="col-6 col-12-xsmall"><input type="text" name="name" id="name" placeholder="你的名字"
+									required /></div>
 							<div class="col-6 col-12-xsmall"><input type="email" name="email" id="email"
-									placeholder="Email" /></div>
-							<div class="col-12"><input type="text" name="subject" id="subject" placeholder="主旨" />
+									placeholder="Email" required /></div>
+							<div class="col-12"><input type="text" name="subject" id="subject" placeholder="主旨"
+									required />
 							</div>
 							<div class="col-12"><textarea name="message" id="message" placeholder="想跟我說的話"
 									rows="6"></textarea></div>
