@@ -11,8 +11,8 @@ export function IdToSlug(slug: string): string {
   switch (Config.slugMode) {
     case "HASH": {
       const hash = CryptoJS.SHA256(slug);
-      const hasedSlug = hash.toString(CryptoJS.enc.Hex).slice(0, 8);
-      return hasedSlug;
+      const hashedSlug = hash.toString(CryptoJS.enc.Hex).slice(0, 8);
+      return hashedSlug;
     }
     case "RAW":
       return slug;

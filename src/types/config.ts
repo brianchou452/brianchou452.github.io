@@ -32,7 +32,6 @@ interface Configuration {
     url: string;
   };
 
-  bannerStyle: "LOOP";
 }
 
 export type { Configuration };
