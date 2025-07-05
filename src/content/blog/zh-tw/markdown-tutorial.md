@@ -8,6 +8,7 @@ licenseName: "Unlicensed"
 author: emn178
 sourceLink: "https://github.com/emn178/markdown"
 draft: false
+cover: /src/assets/學生請假系統.png
 ---
 
 # Markdown Tutorial 中文
