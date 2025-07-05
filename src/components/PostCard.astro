@@ -110,7 +110,7 @@ if (props.image && !images[props.image])
                 <PostCardInfoIcon name="dashicons:category" />
                 <a
                   class="select-none rounded-md px-1.5 py-0.5 text-[var(--text-color-lighten)] transition-all hover:bg-[var(--primary-color-lighten)] hover:text-[var(--primary-color)]"
-                  href={`/categories/${IdToSlug(props.category)}`}
+                  href={`/${lang}/categories/${IdToSlug(props.category)}`}
                 >
                   {props.category}
                 </a>
@@ -130,7 +130,7 @@ if (props.image && !images[props.image])
                         {index > 0 && <span class="pr-1">/</span>}
                         <a
                           class="rounded-md px-1.5 py-0.5 transition-all hover:bg-[var(--primary-color-lighten)] hover:text-[var(--primary-color)]"
-                          href={`/tags/${IdToSlug(tag)}`}
+                          href={`/${lang}/tags/${IdToSlug(tag)}`}
                         >
                           {tag}
                         </a>
