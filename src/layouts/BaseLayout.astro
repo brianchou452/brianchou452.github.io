@@ -1,6 +1,6 @@
 ---
-import { SITE_DESCRIPTION, SITE_TITLE } from "@/consts";
 import { getLangFromUrl } from "@/i18n/utils";
+import Config from "website.config";
 import BaseHead from "../components/BaseHead.astro";
 
 const lang = getLangFromUrl(Astro.url);
@@ -8,7 +8,7 @@ const lang = getLangFromUrl(Astro.url);
 
 <html lang={lang}>
   <head>
-    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <BaseHead title={Config.title} description={Config.description} />
   </head>
   <body class="overflow-y-hidden">
     <slot />

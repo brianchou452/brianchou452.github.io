@@ -1,6 +1,6 @@
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import Config from "website.config";
 
 interface BlogPostData {
 	[key: string]: unknown;
@@ -18,8 +18,8 @@ interface Context {
 export async function GET(context: Context): Promise<Response> {
 	const posts: BlogPost[] = await getCollection('blog');
 	return rss({
-		title: SITE_TITLE,
-		description: SITE_DESCRIPTION,
+		title: Config.title,
+		description: Config.description,
 		site: context.site,
 		items: posts.map((post: BlogPost) => ({
 			...post.data,
