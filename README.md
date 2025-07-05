@@ -44,3 +44,4 @@ This blog is based off the following projects:
 
 - [Bear Blog](https://github.com/HermanMartinus/bearblog/)
 - [Yukina](https://github.com/WhitePaper233/yukina)
+- [Modern Portfolio Template](https://github.com/rishikesh2003/my-portfolio)

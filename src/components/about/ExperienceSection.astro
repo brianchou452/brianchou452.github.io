@@ -1,0 +1,202 @@
+---
+import TimelineItem from "@/components/about/TimelineItem.astro";
+import { workExperience } from "@/content/about/zh-tw/data.ts";
+---
+
+<style>
+  @reference "../../styles/global.css";
+  .section-header {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.6s ease,
+      transform 0.6s ease;
+  }
+
+  .section-header.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .experience-card {
+    background: var(--card-color);
+    backdrop-filter: blur(8px);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 0.75rem;
+    transition: all 0.3s ease;
+  }
+
+  .achievement-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .achievement-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--primary-color-lighten);
+    margin-right: 0.5rem;
+  }
+
+  .achievement-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color);
+  }
+
+  .achievement-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .achievement-item {
+    position: relative;
+    padding-left: 1.5rem;
+    font-size: 0.875rem;
+    color: var(--text-color-lighten);
+    line-height: 1.5;
+  }
+
+  .achievement-item::before {
+    content: "▶";
+    position: absolute;
+    left: 0;
+    color: var(--primary-color);
+    font-size: 0.75rem;
+    top: 0.125rem;
+  }
+
+  @media (max-width: 768px) {
+    .section-header h2 {
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    .experience-card {
+      padding: 0.75rem;
+    }
+
+    .achievement-item {
+      font-size: 0.8rem;
+      padding-left: 1.25rem;
+    }
+  }
+</style>
+
+<section
+  id="experience"
+  class="py-12 bg-gradient-to-b from-muted/20 to-background"
+>
+  <div class="container max-w-4xl mx-auto px-6 md:px-4">
+    <div class="section-header" data-section-header>
+      <h2
+        class="text-2xl font-bold mb-8 text-center md:text-left flex items-center justify-center md:justify-start text-[var(--text-color)]"
+      >
+        <span class="inline-block mr-2 animate-bounce">💼</span>
+        Experience
+      </h2>
+    </div>
+
+    <div class="mb-8">
+      {
+        workExperience.map((job, index) => (
+          <TimelineItem
+            title={`👨‍💻 ${job.position} | ${job.company}`}
+            subtitle={`🌍 ${job.location}`}
+            date={`📅 ${job.period}`}
+            isLast={index === workExperience.length - 1}
+            index={index}
+          >
+            <div class="experience-card">
+              <div class="achievement-header">
+                <div class="achievement-icon">
+                  <svg
+                    class="h-4 w-4 text-[var(--primary-color)]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m-8 0V6a2 2 0 00-2 2v6"
+                    />
+                  </svg>
+                </div>
+                <h4 class="achievement-title">Key Achievements</h4>
+              </div>
+
+              <ul class="achievement-list">
+                {job.achievements.map((achievement) => (
+                  <li class="achievement-item">{achievement}</li>
+                ))}
+              </ul>
+            </div>
+          </TimelineItem>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  class ExperienceSectionController {
+    private observer: IntersectionObserver;
+
+    constructor() {
+      this.observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              this.animateHeader(entry.target as HTMLElement);
+            }
+          });
+        },
+        {
+          threshold: 0.1,
+          rootMargin: "0px 0px -50px 0px",
+        }
+      );
+
+      this.init();
+    }
+
+    private init() {
+      const header = document.querySelector("[data-section-header]");
+      if (header) {
+        this.observer.observe(header);
+      }
+    }
+
+    private animateHeader(element: HTMLElement) {
+      setTimeout(() => {
+        element.classList.add("animate-in");
+      }, 100);
+
+      this.observer.unobserve(element);
+    }
+
+    public destroy() {
+      this.observer.disconnect();
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      new ExperienceSectionController();
+    });
+  } else {
+    new ExperienceSectionController();
+  }
+</script>

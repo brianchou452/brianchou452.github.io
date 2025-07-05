@@ -1,4 +1,5 @@
 ---
+import ExperienceSection from "@/components/about/ExperienceSection.astro";
 import HeroBanner from "@/components/about/HeroBanner.astro";
 import Footer from "@/components/Footer.astro";
 import NavBar from "@/components/NavBar.astro";
@@ -11,7 +12,7 @@ import Base from "@/layouts/BaseLayout.astro";
   <div class="main-container">
     <div class="transition-leaving w-full space-y-8">
       <main class="content onload-animation">
-        <slot />
+        <ExperienceSection />
       </main>
       <Footer />
     </div>
