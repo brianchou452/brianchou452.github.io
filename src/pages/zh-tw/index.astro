@@ -1,55 +1,35 @@
 ---
-import HeroBanner from "@/components/HeroBanner.astro";
-import Main from "@/layouts/MainLayout.astro";
-
-const props = Astro.props;
+import HeroBanner from "@/components/about/HeroBanner.astro";
+import Footer from "@/components/Footer.astro";
+import NavBar from "@/components/NavBar.astro";
+import Base from "@/layouts/BaseLayout.astro";
 ---
 
-<Main>
-  <div id="banner" class="banner onload-animation-fade-in">
-    <HeroBanner />
+<Base>
+  <NavBar />
+  <HeroBanner />
+  <div class="main-container">
+    <div class="transition-leaving w-full space-y-8">
+      <main class="content onload-animation">
+        <slot />
+      </main>
+      <Footer />
+    </div>
   </div>
-  <!-- <div class="waves" id="header-waves">
-    <svg
-      class="waves"
-      xmlns="http://www.w3.org/2000/svg"
-      xmlns:xlink="http://www.w3.org/1999/xlink"
-      viewBox="0 24 150 28"
-      preserveAspectRatio="none"
-      shape-rendering="auto"
-    >
-      <defs>
-        <path
-          id="gentle-wave"
-          d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"
-        >
-        </path>
-      </defs>
-      <g class="parallax">
-        <use
-          xlink:href="#gentle-wave"
-          x="48"
-          y="0"
-          class="opacity-25"
-          style={{ animationDelay: "-2s", animationDuration: "7s" }}></use>
-        <use
-          xlink:href="#gentle-wave"
-          x="48"
-          y="3"
-          class="opacity-50"
-          style={{ animationDelay: "-3s", animationDuration: "10s" }}></use>
-        <use
-          xlink:href="#gentle-wave"
-          x="48"
-          y="5"
-          class="opacity-75"
-          style={{ animationDelay: "-4s", animationDuration: "13s" }}></use>
-        <use
-          xlink:href="#gentle-wave"
-          x="48"
-          y="7"
-          style={{ animationDelay: "-5s", animationDuration: "20s" }}></use>
-      </g>
-    </svg>
-  </div> -->
-</Main>
+</Base>
+
+<style>
+  @reference "../../styles/global.css";
+  .main-container {
+    @apply w-full md:min-w-[80%] md:max-w-[80%] lg:min-w-[var(--page-width-lg)] lg:max-w-[var(--page-width-lg)] xl:min-w-[var(--page-width-xl)] xl:max-w-[var(--page-width-xl)];
+    @apply md:mx-auto;
+  }
+
+  .side-bar {
+    @apply hidden min-w-[248px] xl:block;
+  }
+
+  .content {
+    @apply xl:w-[calc(var(--page-width-xl)-264px)];
+  }
+</style>
