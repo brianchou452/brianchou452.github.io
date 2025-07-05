@@ -1,0 +1,22 @@
+---
+import BaseHead from "@/components/BaseHead.astro";
+import Footer from "@/components/Footer.astro";
+import Header from "@/components/Header.astro";
+// import HeroBanner from "@/components/HeroBanner.astro";
+import { SITE_DESCRIPTION, SITE_TITLE } from "@/consts";
+---
+
+<!doctype html>
+<html lang="zh-tw">
+  <head>
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <meta http-equiv="refresh" content="0;url=/zh-tw/" />
+  </head>
+  <body>
+    <Header />
+    <main>
+      <!-- <HeroBanner /> -->
+    </main>
+    <Footer />
+  </body>
+</html>

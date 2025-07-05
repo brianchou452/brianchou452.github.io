@@ -1,0 +1,23 @@
+---
+import { SITE_DESCRIPTION, SITE_TITLE } from "@/consts";
+import { getLangFromUrl } from "@/i18n/utils";
+import BaseHead from "../components/BaseHead.astro";
+
+const lang = getLangFromUrl(Astro.url);
+---
+
+<html lang={lang}>
+  <head>
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+  </head>
+  <body class="overflow-y-hidden">
+    <slot />
+  </body>
+</html>
+
+<style>
+  @reference "../styles/global.css";
+  body {
+    @apply bg-[var(--background-color)];
+  }
+</style>
