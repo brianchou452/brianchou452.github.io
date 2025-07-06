@@ -67,3 +67,35 @@ export const workExperience = [
         ],
     },
 ];
+
+export const skills = {
+    programmingLanguages: [
+        "TypeScript",
+        "JavaScript",
+        "Python",
+        "C++",
+        "Java",
+        "Solidity",
+    ],
+    frontendDevelopment: [
+        "Nextjs",
+        "Reactjs",
+        "React Native",
+        "Shadcn UI",
+        "Tailwind CSS",
+        "HTML",
+        "CSS",
+    ],
+    backendDevelopment: ["Nodejs", "Expressjs"],
+    databaseAndStorage: ["PostgreSQL", "Drizzle (ORM)"],
+    cloudAndDevOps: ["AWS"],
+    toolsAndServices: [
+        "Clerk (Auth)",
+        "Sanity (CMS)",
+        "Tinybird (analytics)",
+        "Zod",
+        "Sentry",
+        "Mixpanel",
+        "Trigger.dev",
+    ],
+};

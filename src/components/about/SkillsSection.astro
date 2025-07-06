@@ -1,0 +1,167 @@
+---
+import { skills } from "@/content/about/zh-tw/data";
+import SkillCard from "./SkillCard.astro";
+
+const skillCategories = [
+  {
+    title: "Programming Languages",
+    icon: "💻",
+    skills: skills.programmingLanguages,
+  },
+  {
+    title: "Frontend Development",
+    icon: "🎨",
+    skills: skills.frontendDevelopment,
+  },
+  {
+    title: "Backend Development",
+    icon: "⚙️",
+    skills: skills.backendDevelopment,
+  },
+  {
+    title: "Database & Storage",
+    icon: "🗄️",
+    skills: skills.databaseAndStorage,
+  },
+  {
+    title: "Cloud & DevOps",
+    icon: "☁️",
+    skills: skills.cloudAndDevOps,
+  },
+  {
+    title: "Tools & Services",
+    icon: "🧰",
+    skills: skills.toolsAndServices,
+  },
+];
+---
+
+<section
+  id="skills"
+  class="py-12 my-12 bg-gradient-to-b from-[var(--background-color)] to-[var(--card-color-transparent)]"
+>
+  <div class="container max-w-4xl mx-auto px-6 md:px-4">
+    <div class="motion-wrapper" data-motion="fadeInUp">
+      <h2
+        class="text-2xl font-bold mb-8 text-center md:text-left text-[var(--text-color)]"
+      >
+        🛠️ Skills
+      </h2>
+    </div>
+
+    <div class="skills-container space-y-6" data-motion="container">
+      {
+        skillCategories.map((category, index) => (
+          <div data-motion="slideInUp" data-delay={index * 0.3}>
+            <SkillCard
+              title={category.title}
+              icon={category.icon}
+              skills={category.skills}
+            />
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  /* 初始隱藏所有動畫元素 */
+  [data-motion] {
+    opacity: 0;
+  }
+
+  /* 動畫後的最終狀態 */
+  [data-motion].animate {
+    opacity: 1;
+  }
+
+  /* 標題動畫 */
+  [data-motion="fadeInUp"] {
+    transform: translateY(30px);
+    transition:
+      opacity 0.6s ease-out,
+      transform 0.6s ease-out;
+  }
+
+  [data-motion="fadeInUp"].animate {
+    transform: translateY(0);
+  }
+
+  /* 卡片容器動畫 */
+  [data-motion="container"] {
+    transition: opacity 0.6s ease-out 0.2s;
+  }
+
+  /* 個別卡片動畫 */
+  [data-motion="slideInUp"] {
+    transform: translateY(20px);
+    transition:
+      opacity 0.5s ease-out,
+      transform 0.5s ease-out;
+  }
+
+  [data-motion="slideInUp"].animate {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    [data-motion] {
+      transition-duration: 0.3s !important;
+    }
+  }
+</style>
+
+<script>
+  import { inView } from "motion";
+
+  // 使用 motion 的 inView 來處理滾動觸發動畫
+  document.addEventListener("DOMContentLoaded", () => {
+    // 標題動畫
+    const titleElement = document.querySelector('[data-motion="fadeInUp"]');
+    if (titleElement) {
+      inView(
+        titleElement,
+        () => {
+          titleElement.classList.add("animate");
+        },
+        { amount: 0.1 }
+      );
+    }
+
+    // 容器動畫
+    const containerElement = document.querySelector(
+      '[data-motion="container"]'
+    );
+    if (containerElement) {
+      inView(
+        containerElement,
+        () => {
+          containerElement.classList.add("animate");
+
+          // 交錯動畫卡片
+          const cards = containerElement.querySelectorAll(
+            '[data-motion="slideInUp"]'
+          );
+          cards.forEach((card, index) => {
+            const delay =
+              parseFloat(card.getAttribute("data-delay") || "0") * 1000;
+            setTimeout(() => {
+              card.classList.add("animate");
+
+              // 技能標籤動畫
+              const skillTags = card.querySelectorAll(".skill-tag");
+              skillTags.forEach((tag, tagIndex) => {
+                setTimeout(() => {
+                  (tag as HTMLElement).style.opacity = "1";
+                  (tag as HTMLElement).style.transform = "scale(1)";
+                }, tagIndex * 50);
+              });
+            }, delay);
+          });
+        },
+        { amount: 0.1 }
+      );
+    }
+  });
+</script>

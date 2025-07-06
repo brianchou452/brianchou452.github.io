@@ -1,6 +1,7 @@
 ---
 import ExperienceSection from "@/components/about/ExperienceSection.astro";
 import HeroBanner from "@/components/about/HeroBanner.astro";
+import SkillsSection from "@/components/about/SkillsSection.astro";
 import Footer from "@/components/Footer.astro";
 import NavBar from "@/components/NavBar.astro";
 import Base from "@/layouts/BaseLayout.astro";
@@ -9,28 +10,11 @@ import Base from "@/layouts/BaseLayout.astro";
 <Base>
   <NavBar />
   <HeroBanner />
-  <div class="main-container">
-    <div class="transition-leaving w-full space-y-8">
-      <main class="content onload-animation">
-        <ExperienceSection />
-      </main>
+  <div class="transition-leaving w-full space-y-8">
+    <main class="onload-animation">
+      <ExperienceSection />
+      <SkillsSection />
       <Footer />
-    </div>
+    </main>
   </div>
 </Base>
-
-<style>
-  @reference "../../styles/global.css";
-  .main-container {
-    @apply w-full md:min-w-[80%] md:max-w-[80%] lg:min-w-[var(--page-width-lg)] lg:max-w-[var(--page-width-lg)] xl:min-w-[var(--page-width-xl)] xl:max-w-[var(--page-width-xl)];
-    @apply md:mx-auto;
-  }
-
-  .side-bar {
-    @apply hidden min-w-[248px] xl:block;
-  }
-
-  .content {
-    @apply xl:w-[calc(var(--page-width-xl)-264px)];
-  }
-</style>
