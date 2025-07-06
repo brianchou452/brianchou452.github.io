@@ -5,18 +5,6 @@ import { workExperience } from "@/content/about/zh-tw/data.ts";
 
 <style>
   @reference "../../styles/global.css";
-  .section-header {
-    opacity: 0;
-    transform: translateY(20px);
-    transition:
-      opacity 0.6s ease,
-      transform 0.6s ease;
-  }
-
-  .section-header.animate-in {
-    opacity: 1;
-    transform: translateY(0);
-  }
 
   .experience-card {
     background: var(--card-color);
@@ -98,52 +86,59 @@ import { workExperience } from "@/content/about/zh-tw/data.ts";
   class="py-12 bg-gradient-to-b from-muted/20 to-background"
 >
   <div class="container max-w-4xl mx-auto px-6 md:px-4">
-    <div class="section-header" data-section-header>
+    <div class="section-header" data-animate-header>
       <h2
         class="text-2xl font-bold mb-8 text-center md:text-left flex items-center justify-center md:justify-start text-[var(--text-color)]"
       >
-        <span class="inline-block mr-2 animate-bounce">💼</span>
+        <span class="inline-block mr-2" data-animate-emoji>💼</span>
         Experience
       </h2>
     </div>
 
-    <div class="mb-8">
+    <div class="mb-8" data-animate-timeline>
       {
         workExperience.map((job, index) => (
-          <TimelineItem
-            title={`👨‍💻 ${job.position} | ${job.company}`}
-            subtitle={`🌍 ${job.location}`}
-            date={`📅 ${job.period}`}
-            isLast={index === workExperience.length - 1}
-            index={index}
-          >
-            <div class="experience-card">
-              <div class="achievement-header">
-                <div class="achievement-icon">
-                  <svg
-                    class="h-4 w-4 text-[var(--primary-color)]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m-8 0V6a2 2 0 00-2 2v6"
-                    />
-                  </svg>
+          <div data-animate-item={index}>
+            <TimelineItem
+              title={`👨‍💻 ${job.position} | ${job.company}`}
+              subtitle={`🌍 ${job.location}`}
+              date={`📅 ${job.period}`}
+              isLast={index === workExperience.length - 1}
+              index={index}
+            >
+              <div class="experience-card">
+                <div class="achievement-header">
+                  <div class="achievement-icon">
+                    <svg
+                      class="h-4 w-4 text-[var(--primary-color)]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m-8 0V6a2 2 0 00-2 2v6"
+                      />
+                    </svg>
+                  </div>
+                  <h4 class="achievement-title">Key Achievements</h4>
                 </div>
-                <h4 class="achievement-title">Key Achievements</h4>
-              </div>
 
-              <ul class="achievement-list">
-                {job.achievements.map((achievement) => (
-                  <li class="achievement-item">{achievement}</li>
-                ))}
-              </ul>
-            </div>
-          </TimelineItem>
+                <ul class="achievement-list">
+                  {job.achievements.map((achievement, achievementIndex) => (
+                    <li
+                      class="achievement-item"
+                      data-animate-achievement={achievementIndex}
+                    >
+                      {achievement}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </TimelineItem>
+          </div>
         ))
       }
     </div>
@@ -151,52 +146,177 @@ import { workExperience } from "@/content/about/zh-tw/data.ts";
 </section>
 
 <script>
+  import { animate, inView } from "motion";
+
   class ExperienceSectionController {
-    private observer: IntersectionObserver;
+    private cleanupFunctions: (() => void)[] = [];
 
     constructor() {
-      this.observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              this.animateHeader(entry.target as HTMLElement);
-            }
-          });
-        },
-        {
-          threshold: 0.1,
-          rootMargin: "0px 0px -50px 0px",
-        }
-      );
-
       this.init();
     }
 
     private init() {
-      const header = document.querySelector("[data-section-header]");
-      if (header) {
-        this.observer.observe(header);
-      }
+      this.setupHeaderAnimation();
+      this.setupEmojiAnimation();
+      this.setupTimelineAnimation();
     }
 
-    private animateHeader(element: HTMLElement) {
-      setTimeout(() => {
-        element.classList.add("animate-in");
-      }, 100);
+    private setupHeaderAnimation() {
+      const header = document.querySelector("[data-animate-header]");
+      if (!header) return;
 
-      this.observer.unobserve(element);
+      // 設置初始狀態
+      animate(
+        header,
+        { opacity: 0, transform: "translateY(20px)" },
+        { duration: 0 }
+      );
+
+      // 進入視窗動畫
+      const cleanup = inView(
+        header,
+        (element) => {
+          animate(
+            element,
+            { opacity: 1, transform: "translateY(0px)" },
+            {
+              duration: 0.6,
+            }
+          );
+        },
+        {
+          margin: "0px 0px -50px 0px",
+        }
+      );
+
+      this.cleanupFunctions.push(cleanup);
+    }
+
+    private setupEmojiAnimation() {
+      const emoji = document.querySelector("[data-animate-emoji]");
+      if (!emoji) return;
+
+      // 持續彈跳動畫
+      const bounceAnimation = () => {
+        animate(
+          emoji,
+          { transform: "translateY(-8px) rotate(5deg)" },
+          { duration: 0.5 }
+        ).then(() => {
+          animate(
+            emoji,
+            { transform: "translateY(0px) rotate(-5deg)" },
+            { duration: 0.5 }
+          ).then(() => {
+            animate(
+              emoji,
+              { transform: "translateY(0px) rotate(0deg)" },
+              { duration: 0.5 }
+            ).then(() => {
+              setTimeout(bounceAnimation, 1000);
+            });
+          });
+        });
+      };
+
+      bounceAnimation();
+    }
+
+    private setupTimelineAnimation() {
+      const timelineItems = document.querySelectorAll("[data-animate-item]");
+
+      timelineItems.forEach((item, index) => {
+        // 設置初始狀態
+        animate(
+          item,
+          {
+            opacity: 0,
+            transform: "translateY(50px) scale(0.95)",
+          },
+          { duration: 0 }
+        );
+
+        // 進入視窗動畫
+        const cleanup = inView(
+          item,
+          (element) => {
+            setTimeout(() => {
+              animate(
+                element,
+                {
+                  opacity: 1,
+                  transform: "translateY(0px) scale(1)",
+                },
+                { duration: 0.7 }
+              );
+
+              // 動畫成就項目
+              this.animateAchievements(element as HTMLElement);
+            }, index * 100);
+          },
+          {
+            margin: "0px 0px -100px 0px",
+          }
+        );
+
+        this.cleanupFunctions.push(cleanup);
+      });
+    }
+
+    private animateAchievements(container: HTMLElement) {
+      const achievements = container.querySelectorAll(
+        "[data-animate-achievement]"
+      );
+
+      if (achievements.length === 0) return;
+
+      // 設置初始狀態並依次動畫
+      achievements.forEach((achievement, index) => {
+        animate(
+          achievement,
+          { opacity: 0, transform: "translateX(-20px)" },
+          { duration: 0 }
+        );
+
+        setTimeout(
+          () => {
+            animate(
+              achievement,
+              { opacity: 1, transform: "translateX(0px)" },
+              { duration: 0.4 }
+            );
+          },
+          300 + index * 100
+        );
+      });
     }
 
     public destroy() {
-      this.observer.disconnect();
+      this.cleanupFunctions.forEach((cleanup) => cleanup());
+      this.cleanupFunctions = [];
     }
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-      new ExperienceSectionController();
-    });
-  } else {
-    new ExperienceSectionController();
+  // 初始化控制器
+  let controller: ExperienceSectionController | null = null;
+
+  function initController() {
+    if (controller) {
+      controller.destroy();
+    }
+    controller = new ExperienceSectionController();
   }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initController);
+  } else {
+    initController();
+  }
+
+  // 清理函數（如果需要）
+  window.addEventListener("beforeunload", () => {
+    if (controller) {
+      controller.destroy();
+    }
+  });
 </script>
