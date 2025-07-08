@@ -1,4 +1,6 @@
 ---
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+
 interface Work {
   id: string;
   cover?: string;
@@ -8,21 +10,20 @@ interface Work {
 
 interface Props {
   works: Work[];
-  lang: string;
 }
 
-const { works, lang } = Astro.props;
+const { works } = Astro.props;
 
 // 創建足夠的作品項目來填滿滾動條
 const duplicatedWorks = [...works, ...works, ...works, ...works];
 
-const bannerTitle = lang === "zh-tw" ? "作品集" : "Portfolio";
-const bannerSubtitle =
-  lang === "zh-tw" ? "探索我的創意世界" : "Explore My Creative World";
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const bannerTitle = t("works.title");
 ---
 
 <section
-  class="relative overflow-hidden py-28" /* 增加垂直 padding */
+  class="relative overflow-hidden py-28"
   style="background-color: var(--background-color);"
 >
   <!-- 背景裝飾 (我們將移除這個，讓背景色由 --background-color 控制) -->
@@ -99,7 +100,7 @@ const bannerSubtitle =
   >
     <!-- Div for backdrop-filter and mask -->
     <div
-      class="py-4 px-8 md:py-6 md:px-12 rounded-3xl backdrop-blur-lg" /* Added backdrop-blur-lg */
+      class="py-4 px-8 md:py-6 md:px-12 rounded-3xl backdrop-blur-lg"
       style="
         background-color: oklch(from var(--card-color) l c h / 0.02); /* Minimal background to trigger backdrop */
         -webkit-mask-image: radial-gradient(ellipse at center, black 25%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.20) 65%, transparent 80%);
@@ -205,12 +206,16 @@ const bannerSubtitle =
     cursor: pointer;
     transition: all 0.3s ease;
     /* box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); */ /* 移除舊陰影 */
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* Tailwind shadow-lg 替代 */
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1); /* Tailwind shadow-lg 替代 */
     background-color: var(--card-color); /* 卡片背景色 */
   }
 
   .dark .work-item {
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); /* Tailwind shadow-xl for dark */
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1); /* Tailwind shadow-xl for dark */
     /* 考慮為深色模式添加特定陰影，例如帶有品牌色調 */
     /* box-shadow: 0 10px 15px -3px var(--primary-color-transparent), 0 4px 6px -4px var(--primary-color-transparent); */
   }
