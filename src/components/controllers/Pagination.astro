@@ -35,9 +35,8 @@ if (props.lastPage <= maxVisiblePages) {
 ---
 
 <div
-  class="flex flex-row justify-center space-x-4"
   style={props.style}
-  class:list={[props.class]}
+  class:list={["flex flex-row justify-center space-x-4", props.class]}
 >
   <a
     href={props.prevURL}
