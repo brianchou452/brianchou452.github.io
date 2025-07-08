@@ -1,4 +1,6 @@
 ---
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+
 interface Work {
   id: string;
   cover?: string;
@@ -8,24 +10,23 @@ interface Work {
 
 interface Props {
   works: Work[];
-  lang: string;
 }
 
-const { works, lang } = Astro.props;
+const { works } = Astro.props;
 
 // 創建足夠的作品項目來填滿滾動條
 const duplicatedWorks = [...works, ...works, ...works, ...works];
 
-const bannerTitle = lang === "zh-tw" ? "作品集" : "Portfolio";
-const bannerSubtitle =
-  lang === "zh-tw" ? "探索我的創意世界" : "Explore My Creative World";
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const bannerTitle = t("works.title");
 ---
 
 <section
-  class="relative overflow-hidden bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 py-20"
+  class="relative overflow-hidden py-28"
+  style="background-color: var(--background-color);"
 >
-  <!-- 背景裝飾 -->
-  <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+  <!-- 背景裝飾 (讓背景色由 --background-color 控制) -->
 
   <!-- 動畫容器 -->
   <div class="relative">
@@ -93,18 +94,33 @@ const bannerSubtitle =
   </div>
 
   <!-- 標題覆蓋層 -->
-  <!-- <div
-    class="absolute inset-0 flex items-center justify-center pointer-events-none"
+  <div
+    class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none"
   >
-    <div class="text-center">
-      <h1 class="text-6xl md:text-8xl font-bold text-white mb-4 opacity-90">
+    <!-- Div for backdrop-filter and mask -->
+    <div
+      class="py-4 px-8 md:py-6 md:px-12 rounded-3xl backdrop-blur-lg"
+      style="
+        background-color: oklch(from var(--card-color) l c h / 0.02); /* Minimal background to trigger backdrop */
+        -webkit-mask-image: radial-gradient(ellipse at center, black 25%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.20) 65%, transparent 80%);
+        mask-image: radial-gradient(ellipse at center, black 25%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.20) 65%, transparent 80%);
+        -webkit-mask-size: 100% 100%;
+        mask-size: 100% 100%;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+      "
+    >
+      <h1
+        class="text-5xl md:text-7xl font-bold"
+        style="color: var(--text-color);"
+      >
         {bannerTitle}
       </h1>
-      <p class="text-xl md:text-2xl text-white opacity-70">
-        {bannerSubtitle}
-      </p>
     </div>
-  </div> -->
+    <!-- 副標題已移除 -->
+  </div>
 </section>
 
 <script>
@@ -188,12 +204,27 @@ const bannerSubtitle =
     position: relative;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    /* box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); */ /* 移除舊陰影 */
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1); /* Tailwind shadow-lg 替代 */
+    background-color: var(--card-color); /* 卡片背景色 */
+  }
+
+  .dark .work-item {
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1); /* Tailwind shadow-xl for dark */
+    /* 考慮為深色模式添加特定陰影，例如帶有品牌色調 */
+    /* box-shadow: 0 10px 15px -3px var(--primary-color-transparent), 0 4px 6px -4px var(--primary-color-transparent); */
   }
 
   .work-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    transform: translateY(-5px) scale(1.03); /* 稍微放大效果 */
+    /* box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); */ /* 移除舊 hover 陰影 */
+  }
+
+[No replacement lines; remove the block entirely]
   }
 
   .work-image {
@@ -210,7 +241,8 @@ const bannerSubtitle =
   .work-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */ /* 移除固定漸層 */
+    /* 背景色將由 .work-item 的 var(--card-color) 繼承或控制 */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -219,7 +251,8 @@ const bannerSubtitle =
   .placeholder-text {
     font-size: 4rem;
     font-weight: bold;
-    color: white;
+    /* color: white; */ /* 移除固定顏色 */
+    color: var(--text-color-lighten); /* 使用 CSS 變數 */
     opacity: 0.7;
   }
 
@@ -243,11 +276,32 @@ const bannerSubtitle =
     opacity: 1;
   }
 
+  /* Default title style (Light mode, non-hover) */
   .work-title {
-    color: white;
+    color: var(--text-color);
     font-weight: 600;
     font-size: 1.2rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Softer shadow for light mode text */
+    transition: color 0.3s ease;
+  }
+
+  /* Light mode, on hover: Title should be light to contrast with dark overlay */
+  .work-item:hover .work-title {
+    color: oklch(100% 0 0 / 95%); /* White/very light text */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); /* Stronger shadow for light text on dark overlay */
+  }
+
+  /* Dark mode, non-hover: Title is already light */
+  .dark .work-title {
+    color: oklch(100% 0 0 / 95%);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Dark mode, on hover: Title remains light, as overlay is dark. No specific change needed from .dark .work-title if it's already correct. */
+  /* However, to be explicit or if any adjustment is needed for hover on dark: */
+  .dark .work-item:hover .work-title {
+    color: oklch(100% 0 0 / 98%); /* Ensure it's very bright */
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
   }
 
   /* 確保動畫流暢 */
