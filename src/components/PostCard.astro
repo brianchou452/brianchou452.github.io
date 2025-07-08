@@ -34,11 +34,11 @@ const currentLang = props.lang || lang;
 const contentUrl = `/${currentLang}/posts/${entryID}`;
 const { time, wordCount } = props.readingMetadata;
 const images = import.meta.glob<{ default: ImageMetadata }>(
-  "src/assets/*.{jpeg,jpg,png,gif}"
+  "src/assets/blog/**/*.{jpeg,jpg,png,gif}"
 );
 if (props.image && !images[props.image])
   throw new Error(
-    `"${props.image}" does not exist in glob: "src/assets/*.{jpeg,jpg,png,gif}"`
+    `"${props.image}" does not exist in glob: "src/assets/blog/**/*.{jpeg,jpg,png,gif}"`
   );
 ---
 

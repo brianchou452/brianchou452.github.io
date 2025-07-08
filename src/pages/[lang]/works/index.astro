@@ -1,0 +1,96 @@
+---
+import Footer from "@/components/Footer.astro";
+import NavBar from "@/components/NavBar.astro";
+import ProjectsBanner from "@/components/works/ProjectsBanner.astro";
+import WorkCard from "@/components/works/WorkCard.astro";
+import { languages } from "@/i18n/ui";
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+import Base from "@/layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const allPaths = [];
+  for (const lang of Object.keys(languages)) {
+    allPaths.push({
+      params: { lang },
+      props: { lang },
+    });
+  }
+  return allPaths;
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// 獲取作品集內容
+const allWorks = await getCollection("works");
+const works = allWorks.filter((work) => work.id.startsWith(`${lang}/`));
+
+// 為 banner 動畫準備作品圖片
+const workImages = works.map((work) => ({
+  id: work.id,
+  cover: work.data.cover,
+  title: work.data.title,
+  slug: work.id.replace(`${lang}/`, ""),
+}));
+
+const images = import.meta.glob<{ default: ImageMetadata }>(
+  "src/assets/works/**/*.{jpeg,jpg,png,gif}"
+);
+works.forEach((work) => {
+  if (work.data.cover && !images[work.data.cover])
+    throw new Error(
+      `"${work.data.cover}" does not exist in glob: "src/assets/works/**/*.{jpeg,jpg,png,gif}"`
+    );
+});
+---
+
+<Base title={t("nav.works")} description="我的作品集展示">
+  <NavBar />
+  <ProjectsBanner works={workImages} lang={lang} />
+  <div class="transition-leaving w-full space-y-8">
+    <main class="onload-animation">
+      <section class="py-16 px-6 max-w-6xl mx-auto">
+        <div class="text-center mb-12">
+          <h2 class="text-4xl font-bold text-[var(--text-color)] mb-4">
+            {t("works.title")}
+          </h2>
+          <p class="text-lg text-[var(--text-color-lighten)] max-w-2xl mx-auto">
+            {t("works.description")}
+          </p>
+        </div>
+
+        <!-- 作品網格 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {
+            works.map((work) => (
+              <WorkCard
+                title={work.data.title}
+                description={work.data.description}
+                cover={work.data.cover}
+                tags={work.data.tags}
+                href={`/${lang}/works/${work.id.replace(`${lang}/`, "")}`}
+              />
+            ))
+          }
+        </div>
+
+        <!-- 如果沒有作品 -->
+        {
+          works.length === 0 && (
+            <div class="text-center py-16">
+              <div class="text-6xl mb-4">🚧</div>
+              <h3 class="text-2xl font-bold text-[var(--text-color)] mb-2">
+                {t("works.empty")}
+              </h3>
+              <p class="text-[var(--text-color-lighten)]">
+                {t("works.emptyDescription")}
+              </p>
+            </div>
+          )
+        }
+      </section>
+      <Footer />
+    </main>
+  </div>
+</Base>

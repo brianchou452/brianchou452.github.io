@@ -1,0 +1,28 @@
+---
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+import { getCollection, type CollectionEntry } from "astro:content";
+
+export async function getStaticPaths() {
+  const works = await getCollection("works");
+
+  return works.map((work) => {
+    const [lang, ...slugParts] = work.id.split("/");
+    const slug = slugParts.join("/");
+
+    return {
+      params: {
+        lang,
+        slug: slug || undefined,
+      },
+      props: { work },
+    };
+  });
+}
+
+interface Props {
+  work: CollectionEntry<"works">;
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---

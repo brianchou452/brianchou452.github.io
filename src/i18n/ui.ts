@@ -27,6 +27,12 @@ export const ui = {
         'pages.categories.title': '分類',
         'pages.tags.archive': '封存標籤',
         'pages.tags.title': '標籤',
+        'works.title': '我的作品',
+        'works.description': '這裡展示了我的一些精選作品，涵蓋了不同的技術領域和創意實踐。',
+        'works.empty': '作品準備中',
+        'works.emptyDescription': '更多精彩作品即將上線，敬請期待！',
+        'works.viewDetails': '查看詳情',
+        'works.backToWorks': '返回作品集',
     },
     "en": {
         'nav.home': 'Home',
@@ -41,6 +47,12 @@ export const ui = {
         'copyright.author': 'Author',
         'copyright.publish_date': 'Publish Date',
         'copyright.license': 'License',
-        'archive.year_title_count': 'Total {{0}} articles'
+        'archive.year_title_count': 'Total {{0}} articles',
+        'works.title': 'My Works',
+        'works.description': 'Here are some of my selected works, covering different technical fields and creative practices.',
+        'works.empty': 'Works in Progress',
+        'works.emptyDescription': 'More amazing works are coming soon, stay tuned!',
+        'works.viewDetails': 'View Details',
+        'works.backToWorks': 'Back to Works',
     },
 } as const;

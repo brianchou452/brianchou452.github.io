@@ -1,0 +1,98 @@
+---
+import { Image } from "astro:assets";
+
+interface Props {
+  title: string;
+  description?: string;
+  cover?: string;
+  tags?: string[];
+  href: string;
+}
+
+const { title, description, cover, tags, href } = Astro.props;
+
+const images = import.meta.glob<{ default: ImageMetadata }>(
+  "src/assets/works/**/*.{jpeg,jpg,png,gif}"
+);
+---
+
+<div
+  class="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+>
+  <a href={href} class="block" data-astro-prefetch>
+    <!--  作品卡片 -->
+    <div
+      class="bg-[var(--card-color)] rounded-xl overflow-hidden shadow-lg aspect-square flex flex-col"
+    >
+      <!-- 作品圖片 -->
+      <div class="flex-1 overflow-hidden relative">
+        {
+          cover && images[cover] ? (
+            <Image
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              src={images[cover]()}
+              alt={title}
+              loading={"lazy"}
+            />
+          ) : (
+            <div class="w-full h-full bg-gradient-to-br from-purple-400 to-blue-500 flex items-center justify-center">
+              <span class="text-white text-6xl font-bold opacity-20">
+                {title.charAt(0)}
+              </span>
+            </div>
+          )
+        }
+      </div>
+
+      <!-- 作品資訊 -->
+      <div class="p-6 bg-[var(--card-color)]">
+        <h3
+          class="text-xl font-bold text-[var(--text-color)] mb-2 line-clamp-1"
+        >
+          {title}
+        </h3>
+        {
+          description && (
+            <p class="text-sm text-[var(--text-color-lighten)] line-clamp-2 mb-3">
+              {description}
+            </p>
+          )
+        }
+
+        <!-- 標籤 -->
+        {
+          tags && tags.length > 0 && (
+            <div class="flex flex-wrap gap-1">
+              {tags.slice(0, 3).map((tag, index) => (
+                <span class="px-2 py-1 text-xs bg-[var(--primary-color-transparent)] text-[var(--primary-color)] rounded-full">
+                  {tag}
+                </span>
+              ))}
+              {tags.length > 3 && (
+                <span class="px-2 py-1 text-xs text-[var(--text-color-lighten)]">
+                  +{tags.length - 3}
+                </span>
+              )}
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </a>
+</div>
+
+<style>
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>
