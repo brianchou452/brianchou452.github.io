@@ -97,12 +97,22 @@ const bannerSubtitle =
   <div
     class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none"
   >
-    <h1
-      class="text-5xl md:text-7xl font-bold mb-4"
-      style="color: var(--text-color);"
+    <!-- 新增一個 div 來應用 backdrop-filter -->
+    <div
+      class="p-4 md:p-6 rounded-lg"
+      style="
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        background-color: oklch(from var(--background-color) l c h / 10%);
+      "
     >
-      {bannerTitle}
-    </h1>
+      <h1
+        class="text-5xl md:text-7xl font-bold"
+        style="color: var(--text-color);"
+      >
+        {bannerTitle}
+      </h1>
+    </div>
     <!-- 副標題已移除 -->
   </div>
 </section>
@@ -257,18 +267,32 @@ const bannerSubtitle =
     opacity: 1;
   }
 
+  /* Default title style (Light mode, non-hover) */
   .work-title {
-    /* color: white; */ /* 移除固定顏色 */
-    color: var(--text-color); /* 使用 CSS 變數，或者在深色背景下可能需要更亮的顏色，如 var(--title-color) 或直接用白色 */
-    /* 在深色卡片上，白色文字通常更好。可以考慮 .dark .work-title { color: white; } 如果 var(--text-color) 在深色模式不夠亮 */
+    color: var(--text-color);
     font-weight: 600;
     font-size: 1.2rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* 這個陰影在淺色卡片上可能不明顯，在深色卡片上可能不需要 */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Softer shadow for light mode text */
+    transition: color 0.3s ease;
   }
 
+  /* Light mode, on hover: Title should be light to contrast with dark overlay */
+  .work-item:hover .work-title {
+    color: oklch(100% 0 0 / 95%); /* White/very light text */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); /* Stronger shadow for light text on dark overlay */
+  }
+
+  /* Dark mode, non-hover: Title is already light */
   .dark .work-title {
-    color: oklch(100% 0 0 / 95%); /* 深色模式下使用較亮的文字，類似 --title-color */
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); /* 深色模式下可以調整陰影 */
+    color: oklch(100% 0 0 / 95%);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Dark mode, on hover: Title remains light, as overlay is dark. No specific change needed from .dark .work-title if it's already correct. */
+  /* However, to be explicit or if any adjustment is needed for hover on dark: */
+  .dark .work-item:hover .work-title {
+    color: oklch(100% 0 0 / 98%); /* Ensure it's very bright */
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
   }
 
   /* 確保動畫流暢 */
