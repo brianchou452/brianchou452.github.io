@@ -22,10 +22,11 @@ const bannerSubtitle =
 ---
 
 <section
-  class="relative overflow-hidden bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 py-20"
+  class="relative overflow-hidden py-28" /* 增加垂直 padding */
+  style="background-color: var(--background-color);"
 >
-  <!-- 背景裝飾 -->
-  <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+  <!-- 背景裝飾 (我們將移除這個，讓背景色由 --background-color 控制) -->
+  <!-- <div class="absolute inset-0 bg-black bg-opacity-20"></div> -->
 
   <!-- 動畫容器 -->
   <div class="relative">
@@ -93,18 +94,17 @@ const bannerSubtitle =
   </div>
 
   <!-- 標題覆蓋層 -->
-  <!-- <div
-    class="absolute inset-0 flex items-center justify-center pointer-events-none"
+  <div
+    class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none"
   >
-    <div class="text-center">
-      <h1 class="text-6xl md:text-8xl font-bold text-white mb-4 opacity-90">
-        {bannerTitle}
-      </h1>
-      <p class="text-xl md:text-2xl text-white opacity-70">
-        {bannerSubtitle}
-      </p>
-    </div>
-  </div> -->
+    <h1
+      class="text-5xl md:text-7xl font-bold mb-4"
+      style="color: var(--text-color);"
+    >
+      {bannerTitle}
+    </h1>
+    <!-- 副標題已移除 -->
+  </div>
 </section>
 
 <script>
@@ -188,12 +188,24 @@ const bannerSubtitle =
     position: relative;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    /* box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); */ /* 移除舊陰影 */
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* Tailwind shadow-lg 替代 */
+    background-color: var(--card-color); /* 卡片背景色 */
+  }
+
+  .dark .work-item {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); /* Tailwind shadow-xl for dark */
+    /* 考慮為深色模式添加特定陰影，例如帶有品牌色調 */
+    /* box-shadow: 0 10px 15px -3px var(--primary-color-transparent), 0 4px 6px -4px var(--primary-color-transparent); */
   }
 
   .work-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    transform: translateY(-5px) scale(1.03); /* 稍微放大效果 */
+    /* box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); */ /* 移除舊 hover 陰影 */
+  }
+
+  .dark .work-item:hover {
+    /* box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); */
   }
 
   .work-image {
@@ -210,7 +222,8 @@ const bannerSubtitle =
   .work-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */ /* 移除固定漸層 */
+    /* 背景色將由 .work-item 的 var(--card-color) 繼承或控制 */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -219,7 +232,8 @@ const bannerSubtitle =
   .placeholder-text {
     font-size: 4rem;
     font-weight: bold;
-    color: white;
+    /* color: white; */ /* 移除固定顏色 */
+    color: var(--text-color-lighten); /* 使用 CSS 變數 */
     opacity: 0.7;
   }
 
@@ -244,10 +258,17 @@ const bannerSubtitle =
   }
 
   .work-title {
-    color: white;
+    /* color: white; */ /* 移除固定顏色 */
+    color: var(--text-color); /* 使用 CSS 變數，或者在深色背景下可能需要更亮的顏色，如 var(--title-color) 或直接用白色 */
+    /* 在深色卡片上，白色文字通常更好。可以考慮 .dark .work-title { color: white; } 如果 var(--text-color) 在深色模式不夠亮 */
     font-weight: 600;
     font-size: 1.2rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* 這個陰影在淺色卡片上可能不明顯，在深色卡片上可能不需要 */
+  }
+
+  .dark .work-title {
+    color: oklch(100% 0 0 / 95%); /* 深色模式下使用較亮的文字，類似 --title-color */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); /* 深色模式下可以調整陰影 */
   }
 
   /* 確保動畫流暢 */
