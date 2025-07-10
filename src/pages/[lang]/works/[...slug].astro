@@ -4,38 +4,60 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import Banner from "@/components/Banner.astro";
 import Markdown from "@/components/Markdown.astro";
 import { getLangFromUrl, useTranslations } from "@/i18n/utils";
-import { ui, defaultLang } from "@/i18n/ui";
+import { ui, defaultLang, languages } from "@/i18n/ui"; // Import languages
 import { Debug } from "astro:components";
 
-
 export async function getStaticPaths() {
-  const works = await getCollection("works", ({ data }) => {
-    return data.draft !== true; // Filter out draft works
-  });
-  return works.map((work) => {
-    // Correctly extract lang and slug.
-    // Example id: "en/my-work.md" -> lang: "en", slug: "my-work"
-    // Example id: "zh-tw/another-work.md" -> lang: "zh-tw", slug: "another-work"
-    const parts = work.id.split("/");
-    const lang = parts[0] as keyof typeof ui;
-    // The slug is the filename without the .md extension
-    const slug = work.slug.substring(work.slug.indexOf('/') + 1);
+  const allWorks = await getCollection("works", ({ data }) => data.draft !== true);
 
-
-    return {
-      params: { lang: lang, slug: slug },
-      props: work,
-    };
+  // Create a set of unique base slugs (e.g., "my-cool-project")
+  const uniqueBaseSlugs = new Set<string>();
+  allWorks.forEach(work => {
+    // Assuming slug is like "en/my-cool-project" or "zh-tw/my-cool-project"
+    const slugParts = work.slug.split('/');
+    if (slugParts.length > 1) {
+      uniqueBaseSlugs.add(slugParts.slice(1).join('/')); // Handles slugs with their own slashes
+    } else {
+      uniqueBaseSlugs.add(work.slug); // Fallback if no lang prefix, though unlikely with current setup
+    }
   });
+
+  const paths = [];
+  for (const baseSlug of uniqueBaseSlugs) {
+    for (const lang of Object.keys(languages) as (keyof typeof ui)[]) {
+      // Try to find the work for the current language and baseSlug
+      let workForPath = allWorks.find(w => w.slug === `${lang}/${baseSlug}`);
+
+      // If not found and the current language is not the default language, try to find it in the default language
+      if (!workForPath && lang !== defaultLang) {
+        workForPath = allWorks.find(w => w.slug === `${defaultLang}/${baseSlug}`);
+      }
+
+      // If a work entry is found (either in the target lang or default lang), create the path
+      if (workForPath) {
+        paths.push({
+          params: { lang, slug: baseSlug }, // URL uses target lang and base slug
+          props: { work: workForPath } // Data comes from the found entry
+        });
+      }
+      // If workForPath is still undefined here, it means the content doesn't exist
+      // for this lang/slug combination, nor in the default language for this baseSlug.
+      // Astro will 404 for these paths if no props are returned, which is fine.
+      // Or more accurately, if this combination is not pushed, Astro won't build it.
+      // We only push paths for which we have content (direct or fallback).
+    }
+  }
+  return paths;
 }
 
-type Props = CollectionEntry<"works">;
+type Props = { work: CollectionEntry<"works"> };
 
-const work = Astro.props;
+const { work } = Astro.props; // work is now the resolved entry (target or fallback)
 const { Content } = await work.render();
 
-const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
+// The lang for UI translations should be from the URL, not necessarily from work.slug's lang
+const pageLang = getLangFromUrl(Astro.url);
+const t = useTranslations(pageLang);
 ---
 
 <BaseLayout>

@@ -17,13 +17,20 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 );
 
 // Construct the new href
-const workUrl = `/${lang}/works/${slug.substring(slug.indexOf('/') + 1)}`;
+let actualSlug = slug; // Default to the full slug if no slash is found or slug is invalid
+if (typeof slug === 'string' && slug.includes('/')) {
+  actualSlug = slug.substring(slug.indexOf('/') + 1);
+} else {
+  console.warn(`[WorkCard] Invalid or missing slug for title "${title}". Received: ${slug}`);
+  actualSlug = ''; // Fallback to empty or some other safe default
+}
+const workUrl = `/${lang}/works/${actualSlug}`;
 ---
 
 <div
   class="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
 >
-  <a href={workUrl} class="block" data-astro-prefetch>
+  <a href={actualSlug ? workUrl : `/${lang}/works`} class="block" data-astro-prefetch>
     <!--  作品卡片 -->
     <div
       class="bg-[var(--card-color)] rounded-xl overflow-hidden shadow-lg aspect-square flex flex-col"
