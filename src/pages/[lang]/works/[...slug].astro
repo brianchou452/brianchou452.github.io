@@ -1,28 +1,50 @@
 ---
-import { getLangFromUrl, useTranslations } from "@/i18n/utils";
 import { getCollection, type CollectionEntry } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Banner from "@/components/Banner.astro";
+import Markdown from "@/components/Markdown.astro";
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+import { ui, defaultLang } from "@/i18n/ui";
+import { Debug } from "astro:components";
+
 
 export async function getStaticPaths() {
-  const works = await getCollection("works");
-
+  const works = await getCollection("works", ({ data }) => {
+    return data.draft !== true; // Filter out draft works
+  });
   return works.map((work) => {
-    const [lang, ...slugParts] = work.id.split("/");
-    const slug = slugParts.join("/");
+    // Correctly extract lang and slug.
+    // Example id: "en/my-work.md" -> lang: "en", slug: "my-work"
+    // Example id: "zh-tw/another-work.md" -> lang: "zh-tw", slug: "another-work"
+    const parts = work.id.split("/");
+    const lang = parts[0] as keyof typeof ui;
+    // The slug is the filename without the .md extension
+    const slug = work.slug.substring(work.slug.indexOf('/') + 1);
+
 
     return {
-      params: {
-        lang,
-        slug: slug || undefined,
-      },
-      props: { work },
+      params: { lang: lang, slug: slug },
+      props: work,
     };
   });
 }
 
-interface Props {
-  work: CollectionEntry<"works">;
-}
+type Props = CollectionEntry<"works">;
+
+const work = Astro.props;
+const { Content } = await work.render();
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 ---
+
+<BaseLayout>
+  <Banner title={work.data.title} subTitle={work.data.description} bannerImage={work.data.image} />
+  <main class="flex flex-col gap-6 px-6 py-8 lg:gap-8 lg:px-10 lg:py-12">
+    <article class="flex-1">
+      <Markdown>
+        <Content />
+      </Markdown>
+    </article>
+  </main>
+</BaseLayout>

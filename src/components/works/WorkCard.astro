@@ -6,20 +6,24 @@ interface Props {
   description?: string;
   cover?: string;
   tags?: string[];
-  href: string;
+  slug: string; // Changed from href
+  lang: string; // Added lang
 }
 
-const { title, description, cover, tags, href } = Astro.props;
+const { title, description, cover, tags, slug, lang } = Astro.props;
 
 const images = import.meta.glob<{ default: ImageMetadata }>(
   "src/assets/works/**/*.{jpeg,jpg,png,gif}"
 );
+
+// Construct the new href
+const workUrl = `/${lang}/works/${slug.substring(slug.indexOf('/') + 1)}`;
 ---
 
 <div
   class="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
 >
-  <a href={href} class="block" data-astro-prefetch>
+  <a href={workUrl} class="block" data-astro-prefetch>
     <!--  作品卡片 -->
     <div
       class="bg-[var(--card-color)] rounded-xl overflow-hidden shadow-lg aspect-square flex flex-col"

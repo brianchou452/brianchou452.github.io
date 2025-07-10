@@ -60,7 +60,8 @@ works.forEach((work) => {
                 description={work.data.description}
                 cover={work.data.cover}
                 tags={work.data.tags}
-                href={`/${lang}/works/${work.id.replace(`${lang}/`, "")}`}
+                slug={work.slug}
+                lang={lang}
               />
             ))
           }
