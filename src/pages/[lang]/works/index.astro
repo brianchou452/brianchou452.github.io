@@ -23,21 +23,45 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
 // 獲取作品集內容
-const allWorks = await getCollection("works");
-const works = allWorks.filter((work) => work.id.startsWith(`${lang}/`));
+const allWorkEntries = await getCollection("works", ({data}) => data.draft !== true); // Ensure drafts are filtered
 
-// 為 banner 動畫準備作品圖片
-const workImages = works.map((work) => ({
-  id: work.id,
+// Identify unique base slugs
+const uniqueBaseSlugs = new Set<string>();
+allWorkEntries.forEach(work => {
+  const slugParts = work.slug.split('/');
+  if (slugParts.length > 1) {
+    uniqueBaseSlugs.add(slugParts.slice(1).join('/'));
+  } else {
+    uniqueBaseSlugs.add(work.slug);
+  }
+});
+
+// For each unique base slug, find the best version to display (current lang or default lang)
+const worksToDisplay = Array.from(uniqueBaseSlugs).map(baseSlug => {
+  let workEntry = allWorkEntries.find(w => w.slug === `${lang}/${baseSlug}`);
+  if (!workEntry && lang !== defaultLang) {
+    workEntry = allWorkEntries.find(w => w.slug === `${defaultLang}/${baseSlug}`);
+  }
+  return workEntry;
+}).filter(work => work !== undefined) as CollectionEntry<"works">[]; // Filter out undefined and assert type
+
+// Sort works, e.g., by date or title if desired (optional)
+// worksToDisplay.sort((a, b) => new Date(b.data.started).getTime() - new Date(a.data.started).getTime());
+
+
+// 為 banner 動畫準備作品圖片 (using worksToDisplay)
+const workImages = worksToDisplay.map((work) => ({
+  id: work.id, // This id will be from the actual entry found (could be defaultLang)
   cover: work.data.cover,
   title: work.data.title,
-  slug: work.id.replace(`${lang}/`, ""),
+  // The slug for banner/navigation purposes should be the base slug, lang is separate
+  slug: work.slug.substring(work.slug.indexOf('/') + 1),
 }));
 
 const images = import.meta.glob<{ default: ImageMetadata }>(
   "src/assets/works/**/*.{jpeg,jpg,png,gif}"
 );
-works.forEach((work) => {
+worksToDisplay.forEach((work) => { // Check images for worksToDisplay
   if (work.data.cover && !images[work.data.cover])
     throw new Error(
       `"${work.data.cover}" does not exist in glob: "src/assets/works/**/*.{jpeg,jpg,png,gif}"`
@@ -54,13 +78,14 @@ works.forEach((work) => {
         <!-- 作品網格 -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {
-            works.map((work) => (
+            worksToDisplay.map((work) => ( // Iterate over worksToDisplay
               <WorkCard
                 title={work.data.title}
                 description={work.data.description}
                 cover={work.data.cover}
                 tags={work.data.tags}
-                href={`/${lang}/works/${work.id.replace(`${lang}/`, "")}`}
+                slug={work.slug} // Pass the full slug of the found entry (e.g., "zh-tw/my-work")
+                lang={lang} // Pass the current page language (e.g., "en")
               />
             ))
           }
