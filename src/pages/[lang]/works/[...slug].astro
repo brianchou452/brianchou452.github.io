@@ -1,10 +1,9 @@
 ---
 import FormattedDate from "@/components/FormattedDate.astro";
 import Markdown from "@/components/Markdown.astro";
-import { defaultLang } from "@/i18n/ui";
+import { defaultLang, languages } from "@/i18n/ui";
 import { getLangFromUrl, useTranslations } from "@/i18n/utils";
 import Main from "@/layouts/MainLayout.astro";
-import { GetSortedWorks } from "@/utils/content";
 import { IdToSlug } from "@/utils/hash";
 import { Icon } from "astro-icon/components";
 import { Image } from "astro:assets";
@@ -29,6 +28,38 @@ export async function getStaticPaths() {
     });
   }
 
+  // Create fallback paths for posts that don't exist in non-default languages
+  const supportedLanguages = Object.keys(languages);
+
+  for (const lang of supportedLanguages) {
+    if (lang === defaultLang) continue;
+
+    const langWorks = allWorks.filter((work) => work.id.startsWith(`${lang}/`));
+    const defaultWorks = allWorks.filter((work) =>
+      work.id.startsWith(`${defaultLang}/`)
+    );
+
+    const langWorkSlugs = new Set(
+      langWorks.map((work) => work.id.split("/").slice(1).join("/"))
+    );
+
+    // Add fallback paths for posts that don't exist in this language
+    for (const defaultWork of defaultWorks) {
+      const [, ...slug] = defaultWork.id.split("/");
+      const slugPath = slug.join("/");
+
+      if (!langWorkSlugs.has(slugPath)) {
+        paths.push({
+          params: {
+            lang,
+            slug: IdToSlug(slugPath),
+          },
+          props: { work: defaultWork, originalSlug: slugPath },
+        });
+      }
+    }
+  }
+
   return paths;
 }
 
@@ -41,30 +72,30 @@ const { work, originalSlug } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-// 尋找相同作品的其他語言版本（用於 fallback）
-const allWorks = await GetSortedWorks();
-let currentWork = work;
+// // 尋找相同作品的其他語言版本（用於 fallback）
+// const allWorks = await GetSortedWorks();
+// let currentWork = work;
 
-// 如果當前語言沒有對應的作品，嘗試使用 fallback
-if (!work.id.startsWith(`${lang}/`)) {
-  // 先嘗試找當前語言版本
-  const currentLangWork = allWorks.find(
-    (w) => w.id === `${lang}/${originalSlug}`
-  );
-  if (currentLangWork) {
-    currentWork = currentLangWork;
-  } else {
-    // fallback 到預設語言
-    const defaultLangWork = allWorks.find(
-      (w) => w.id === `${defaultLang}/${originalSlug}`
-    );
-    if (defaultLangWork) {
-      currentWork = defaultLangWork;
-    }
-  }
-}
+// // 如果當前語言沒有對應的作品，嘗試使用 fallback
+// if (!work.id.startsWith(`${lang}/`)) {
+//   // 先嘗試找當前語言版本
+//   const currentLangWork = allWorks.find(
+//     (w) => w.id === `${lang}/${originalSlug}`
+//   );
+//   if (currentLangWork) {
+//     currentWork = currentLangWork;
+//   } else {
+//     // fallback 到預設語言
+//     const defaultLangWork = allWorks.find(
+//       (w) => w.id === `${defaultLang}/${originalSlug}`
+//     );
+//     if (defaultLangWork) {
+//       currentWork = defaultLangWork;
+//     }
+//   }
+// }
 
-const { Content } = await render(currentWork);
+const { Content } = await render(work);
 
 const images = import.meta.glob<{ default: ImageMetadata }>(
   "src/assets/works/**/*.{jpeg,jpg,png,gif}"
@@ -80,7 +111,7 @@ const {
   ended,
   sourceLink,
   demoLink,
-} = currentWork.data;
+} = work.data;
 ---
 
 <Main title={title}>

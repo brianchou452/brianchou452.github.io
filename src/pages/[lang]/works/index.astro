@@ -31,7 +31,7 @@ const workImages = works.map((work) => ({
   id: work.id,
   cover: work.data.cover,
   title: work.data.title,
-  slug: `${IdToSlug(work.id.replace(`${lang}/`, ""))}`,
+  slug: `${IdToSlug(work.id.split("/").pop() || work.id)}`,
 }));
 
 const images = import.meta.glob<{ default: ImageMetadata }>(
@@ -55,7 +55,7 @@ works.forEach((work) => {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {
             works.map((work) => {
-              const originalSlug = work.id.replace(`${lang}/`, "");
+              const originalSlug = work.id.split("/").pop() || work.id;
               return (
                 <WorkCard
                   title={work.data.title}
