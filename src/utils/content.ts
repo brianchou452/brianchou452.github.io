@@ -304,3 +304,54 @@ export async function GetCategories(lang?: string) {
 
   return categories;
 }
+
+/**
+ * Retrieves and sorts works by their start date.
+ *
+ * This function fetches all works from the "works" collection and sorts them
+ * in descending order by their start date.
+ * 
+ * For non-default languages, if a work doesn't exist in the requested language, 
+ * it will fallback to the default language (zh-tw).
+ *
+ * @param lang - The language code (optional)
+ * @returns A promise that resolves to an array of sorted works.
+ */
+export async function GetSortedWorks(lang?: string) {
+  const allWorks = await getCollection("works");
+
+  let filteredWorks = allWorks;
+
+  if (lang) {
+    // Get works for the requested language
+    const langWorks = allWorks.filter(work => work.id.startsWith(`${lang}/`));
+
+    if (lang !== defaultLang) {
+      // For non-default languages, get fallback works from default language
+      const defaultWorks = allWorks.filter(work => work.id.startsWith(`${defaultLang}/`));
+
+      // Create a map of work slugs for the requested language
+      const langWorkSlugs = new Set(
+        langWorks.map(work => work.id.split('/').slice(1).join('/'))
+      );
+
+      // Add fallback works that don't exist in the requested language
+      const fallbackWorks = defaultWorks.filter(work => {
+        const slug = work.id.split('/').slice(1).join('/');
+        return !langWorkSlugs.has(slug);
+      });
+
+      filteredWorks = [...langWorks, ...fallbackWorks];
+    } else {
+      filteredWorks = langWorks;
+    }
+  }
+
+  const sorted = filteredWorks.toSorted((a, b) => {
+    const dateA = new Date(a.data.started);
+    const dateB = new Date(b.data.started);
+    return dateA > dateB ? -1 : 1;
+  });
+
+  return sorted;
+}

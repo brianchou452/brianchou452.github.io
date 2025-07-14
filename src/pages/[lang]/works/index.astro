@@ -6,7 +6,8 @@ import WorkCard from "@/components/works/WorkCard.astro";
 import { languages } from "@/i18n/ui";
 import { getLangFromUrl, useTranslations } from "@/i18n/utils";
 import Base from "@/layouts/BaseLayout.astro";
-import { getCollection } from "astro:content";
+import { GetSortedWorks } from "@/utils/content";
+import { IdToSlug } from "@/utils/hash";
 
 export async function getStaticPaths() {
   const allPaths = [];
@@ -23,15 +24,14 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
 // 獲取作品集內容
-const allWorks = await getCollection("works");
-const works = allWorks.filter((work) => work.id.startsWith(`${lang}/`));
+const works = await GetSortedWorks(lang);
 
 // 為 banner 動畫準備作品圖片
 const workImages = works.map((work) => ({
   id: work.id,
   cover: work.data.cover,
   title: work.data.title,
-  slug: work.id.replace(`${lang}/`, ""),
+  slug: `${IdToSlug(work.id.replace(`${lang}/`, ""))}`,
 }));
 
 const images = import.meta.glob<{ default: ImageMetadata }>(
@@ -54,15 +54,18 @@ works.forEach((work) => {
         <!-- 作品網格 -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {
-            works.map((work) => (
-              <WorkCard
-                title={work.data.title}
-                description={work.data.description}
-                cover={work.data.cover}
-                tags={work.data.tags}
-                href={`/${lang}/works/${work.id.replace(`${lang}/`, "")}`}
-              />
-            ))
+            works.map((work) => {
+              const originalSlug = work.id.replace(`${lang}/`, "");
+              return (
+                <WorkCard
+                  title={work.data.title}
+                  description={work.data.description}
+                  cover={work.data.cover}
+                  tags={work.data.tags}
+                  href={`/${lang}/works/${IdToSlug(originalSlug)}`}
+                />
+              );
+            })
           }
         </div>
 
