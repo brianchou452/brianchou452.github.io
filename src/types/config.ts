@@ -23,8 +23,6 @@ interface Configuration {
   maxFooterCategoryChip: number;
   maxFooterTagChip: number;
 
-  banners: string[];
-
   slugMode: "HASH" | "RAW";
 
   license: {

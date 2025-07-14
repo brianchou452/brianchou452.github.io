@@ -119,7 +119,6 @@ const bannerTitle = t("works.title");
         {bannerTitle}
       </h1>
     </div>
-    <!-- 副標題已移除 -->
   </div>
 </section>
 
@@ -204,7 +203,6 @@ const bannerTitle = t("works.title");
     position: relative;
     cursor: pointer;
     transition: all 0.3s ease;
-    /* box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); */ /* 移除舊陰影 */
     box-shadow:
       0 4px 6px -1px rgb(0 0 0 / 0.1),
       0 2px 4px -2px rgb(0 0 0 / 0.1); /* Tailwind shadow-lg 替代 */
@@ -215,13 +213,10 @@ const bannerTitle = t("works.title");
     box-shadow:
       0 10px 15px -3px rgb(0 0 0 / 0.1),
       0 4px 6px -4px rgb(0 0 0 / 0.1); /* Tailwind shadow-xl for dark */
-    /* 考慮為深色模式添加特定陰影，例如帶有品牌色調 */
-    /* box-shadow: 0 10px 15px -3px var(--primary-color-transparent), 0 4px 6px -4px var(--primary-color-transparent); */
   }
 
   .work-item:hover {
     transform: translateY(-5px) scale(1.03); /* 稍微放大效果 */
-    /* box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); */ /* 移除舊 hover 陰影 */
   }
 
   .work-image {
@@ -238,8 +233,6 @@ const bannerTitle = t("works.title");
   .work-placeholder {
     width: 100%;
     height: 100%;
-    /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */ /* 移除固定漸層 */
-    /* 背景色將由 .work-item 的 var(--card-color) 繼承或控制 */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -248,7 +241,6 @@ const bannerTitle = t("works.title");
   .placeholder-text {
     font-size: 4rem;
     font-weight: bold;
-    /* color: white; */ /* 移除固定顏色 */
     color: var(--text-color-lighten); /* 使用 CSS 變數 */
     opacity: 0.7;
   }
