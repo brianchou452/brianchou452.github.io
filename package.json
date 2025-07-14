@@ -37,6 +37,7 @@
     "@iconify-json/mingcute": "^1.2.3",
     "@iconify-json/ooui": "^1.2.8",
     "@iconify/svelte": "^5.0.0",
+    "@tailwindcss/typography": "^0.5.16",
     "@types/crypto-js": "^4.2.2",
     "github-slugger": "^2.0.0",
     "mdast-util-to-string": "^4.0.0",

@@ -1,7 +1,7 @@
+@reference "./global.css";
+
 .transition-leaving {
-  transition:
-    transform 300ms,
-    opacity 300ms;
+  transition: transform 300ms, opacity 300ms;
 }
 
 html.is-changing .transition-main {

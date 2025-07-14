@@ -1,3 +1,5 @@
+@reference "./global.css";
+
 .article code:not(pre code)::before {
   content: none !important;
 }
@@ -7,8 +9,7 @@
 }
 
 .article code:not(pre code) {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
+  @apply text-sm;
   font-family: var(--code-font) !important;
   border-radius: 4px;
   color: var(--primary-color) !important;
@@ -49,7 +50,7 @@
 .article h4 > a,
 .article h5 > a,
 .article h6 > a {
-  margin: 0.5rem;
+  @apply m-2;
 }
 
 .article li::marker {
@@ -61,24 +62,14 @@
 }
 
 .article blockquote {
-  padding-top: 0.125rem;
-  padding-bottom: 0.125rem;
-  padding-left: 0.75rem;
-  padding-right: 0.75rem;
+  @apply py-0.5 pl-3 pr-3 lg:pl-4;
   font-style: normal !important;
   border-radius: 0.25rem;
   background-color: var(--primary-color-transparent) !important;
 }
 
-@media (min-width: 1024px) {
-  .article blockquote {
-    padding-left: 1rem;
-  }
-}
-
 .article blockquote blockquote {
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
+  @apply my-1;
 }
 
 .article blockquote p {
@@ -108,14 +99,12 @@
 }
 
 .article hr {
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
+  @apply my-6;
   border-color: var(--primary-color-lighten) !important;
 }
 
 .article pre {
-  margin-top: 0.75rem;
-  margin-bottom: 0.75rem;
+  @apply my-3;
   overflow: hidden !important;
 }
 
