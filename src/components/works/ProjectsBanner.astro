@@ -1,5 +1,6 @@
 ---
 import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+import { Image } from "astro:assets";
 
 interface Work {
   id: string;
@@ -20,6 +21,9 @@ const duplicatedWorks = [...works, ...works, ...works, ...works];
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const bannerTitle = t("works.title");
+const images = import.meta.glob<{ default: ImageMetadata }>(
+  "src/assets/works/**/*.{jpeg,jpg,png,gif}"
+);
 ---
 
 <section
@@ -41,11 +45,11 @@ const bannerTitle = t("works.title");
               data-work-lang={lang}
             >
               {work.cover ? (
-                <img
-                  src={work.cover}
+                <Image
+                  src={images[work.cover]()}
                   alt={work.title}
+                  loading={"lazy"}
                   class="work-image"
-                  loading="lazy"
                 />
               ) : (
                 <div class="work-placeholder">
@@ -72,11 +76,11 @@ const bannerTitle = t("works.title");
               data-work-lang={lang}
             >
               {work.cover ? (
-                <img
-                  src={work.cover}
+                <Image
+                  src={images[work.cover]()}
                   alt={work.title}
+                  loading={"lazy"}
                   class="work-image"
-                  loading="lazy"
                 />
               ) : (
                 <div class="work-placeholder">

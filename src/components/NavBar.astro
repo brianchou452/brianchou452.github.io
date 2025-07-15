@@ -344,7 +344,7 @@ const processHref = (href: string) => {
   // fold nav bar when scroll down
   const navBarElement = document.getElementById("nav");
   const bannerElement = document.getElementById("banner");
-  const bannerHeight = bannerElement!.offsetHeight - 50;
+  const bannerHeight = bannerElement ? bannerElement.offsetHeight - 50 : 0;
   let lastYPos = 0;
   window.addEventListener("scroll", () => {
     if (bannerHeight < window.scrollY && window.scrollY > lastYPos) {
