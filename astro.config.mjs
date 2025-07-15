@@ -24,7 +24,8 @@ export default defineConfig({
     pagefind(),
     swup({
       theme: false,
-      containers: ["main", "footer", ".banner-inner"],
+      containers: ["main", "footer"],
+      ignore: [/.+\/$/gm, /.+\/works$/gm],
       smoothScrolling: true,
       progress: true,
       cache: true,
@@ -32,6 +33,8 @@ export default defineConfig({
       updateHead: true,
       updateBodyClass: false,
       globalInstance: true,
+      debug: false,
+      reloadScripts: true,
     }),
   ],
   i18n: {

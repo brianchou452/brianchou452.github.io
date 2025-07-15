@@ -140,7 +140,11 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 
           // 延遲跳轉以顯示動畫
           setTimeout(() => {
-            window.location.href = `/${workLang}/works/${workId}`;
+            if (window.swup) {
+              window.swup.navigate(`/${workLang}/works/${workId}`);
+            } else {
+              window.location.href = `/${workLang}/works/${workId}`;
+            }
           }, 200);
         }
       });

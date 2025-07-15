@@ -1,6 +1,5 @@
 ---
 import Footer from "@/components/Footer.astro";
-import NavBar from "@/components/NavBar.astro";
 import ProjectsBanner from "@/components/works/ProjectsBanner.astro";
 import WorkCard from "@/components/works/WorkCard.astro";
 import { languages } from "@/i18n/ui";
@@ -46,10 +45,9 @@ works.forEach((work) => {
 ---
 
 <Base title={t("nav.works")} description="我的作品集展示">
-  <NavBar />
   <ProjectsBanner works={workImages} />
-  <div class="transition-leaving w-full space-y-8">
-    <main class="onload-animation">
+  <div class="w-full space-y-8">
+    <div class="onload-animation">
       <section class="py-16 px-6 max-w-6xl mx-auto">
         <!-- 作品網格 -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -85,6 +83,6 @@ works.forEach((work) => {
         }
       </section>
       <Footer />
-    </main>
+    </div>
   </div>
 </Base>

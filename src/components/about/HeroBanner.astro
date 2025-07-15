@@ -29,7 +29,7 @@ import BannerImage from "@/assets/banner.svg";
 <script>
   import { animate } from "motion";
 
-  document.addEventListener("DOMContentLoaded", () => {
+  const startAnimation = () => {
     const texts = ["嗨嗨，", "我叫 Brian 也可以叫我海獺，", "很高興認識你！"];
 
     let textIndex = 0;
@@ -166,7 +166,13 @@ import BannerImage from "@/assets/banner.svg";
         delay: 1.2,
       }
     );
-  });
+  };
+
+  if (document.readyState === "complete") {
+    startAnimation();
+  } else {
+    document.addEventListener("DOMContentLoaded", () => startAnimation());
+  }
 </script>
 
 <style>

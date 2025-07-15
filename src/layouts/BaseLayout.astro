@@ -2,6 +2,7 @@
 import { getLangFromUrl } from "@/i18n/utils";
 import Config from "website.config";
 import BaseHead from "../components/BaseHead.astro";
+import NavBar from "../components/NavBar.astro";
 
 const lang = getLangFromUrl(Astro.url);
 ---
@@ -11,7 +12,10 @@ const lang = getLangFromUrl(Astro.url);
     <BaseHead title={Config.title} description={Config.description} />
   </head>
   <body class="overflow-y-hidden">
-    <slot />
+    <NavBar />
+    <main class="transition-leaving">
+      <slot />
+    </main>
   </body>
 </html>
 

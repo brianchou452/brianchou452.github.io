@@ -1,7 +1,6 @@
 ---
 import SideBar from "@/components/SideBar.astro";
 import Footer from "../components/Footer.astro";
-import NavBar from "../components/NavBar.astro";
 import Base from "./BaseLayout.astro";
 
 export interface Props {
@@ -13,7 +12,6 @@ export interface Props {
 ---
 
 <Base>
-  <NavBar />
   <div id="banner" class="banner onload-animation-fade-in p-10">
     <!-- 空白的區域，避免 navbar 重疊在內容上 -->
   </div>
@@ -24,9 +22,9 @@ export interface Props {
         <SideBar />
       </div>
       <div class="transition-leaving w-full space-y-8">
-        <main class="content onload-animation">
+        <div class="content onload-animation">
           <slot />
-        </main>
+        </div>
         <Footer />
       </div>
     </div>
