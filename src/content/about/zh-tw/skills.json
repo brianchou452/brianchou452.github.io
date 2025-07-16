@@ -1,0 +1,54 @@
+[
+  {
+    "title": "Programming Languages",
+    "icon": "💻",
+    "skills": [
+      "Python",
+      "Java",
+      "C/C++",
+      "Swift",
+      "Kotlin",
+      "TypeScript",
+      "JavaScript",
+      "Go"
+    ]
+  },
+  {
+    "title": "Backend Development",
+    "icon": "⚙️",
+    "skills": ["FastAPI", "Spring Boot"]
+  },
+  {
+    "title": "Frontend Development",
+    "icon": "🎨",
+    "skills": ["Next.js", "React", "Vue.js", "Nuxt", "Tailwind CSS"]
+  },
+  {
+    "title": "Database & Storage",
+    "icon": "🗄️",
+    "skills": ["MySQL", "MongoDB", "Redis"]
+  },
+  {
+    "title": "Cloud & DevOps",
+    "icon": "☁️",
+    "skills": [
+      "GCP",
+      "Docker",
+      "Docker Swarm",
+      "GitHub Actions",
+      "GitLab CI/CD"
+    ]
+  },
+  {
+    "title": "Tools & Services",
+    "icon": "🧰",
+    "skills": [
+      "Git",
+      "Playwright",
+      "Firebase",
+      "Google Analytics",
+      "WordPress (CMS)",
+      "Joomla (CMS)"
+    ]
+  }
+]

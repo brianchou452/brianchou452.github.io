@@ -157,7 +157,8 @@ const { title, subtitle, date, isLast = false, index = 0 } = Astro.props;
   <div class={`timeline-content ${isLast ? "is-last" : ""}`}>
     <div class="timeline-header" data-timeline-header data-index={index}>
       <h3 class="timeline-title">{title}</h3>
-      <p class="timeline-subtitle">{subtitle}</p>
+      <!-- 國家的部分因為目前都一樣先暫時隱藏 -->
+      <!-- <p class="timeline-subtitle">{subtitle}</p> -->
       <p class="timeline-date">{date}</p>
     </div>
 

@@ -1,0 +1,73 @@
+[
+  {
+    "position": "後端實習生",
+    "company": "新加坡商蝦皮娛樂電商有限公司台灣分公司",
+    "location": "Taiwan",
+    "period": "2024/10 - 2025/06",
+    "achievements": [
+      "開發與維護網路爬蟲，優化反爬機制應對策略，顯著降低爬蟲被阻擋的頻率。同時設計全新的爬蟲架構，大幅提升執行效率與程式碼可讀性。",
+      "設計並開發 Email 分類工具，使用 LLM 模型進行郵件分類，提升郵件處理效率。",
+      "與 PM 合作，依據需求優化財務相關系統，調整現有功能並進行程式碼重構，使程式碼行數最多減少 50%，提升維護性與可讀性。",
+      "撰寫 Unit Test 並導入 GitLab CI/CD 自動化測試，降低錯誤發生率，確保系統穩定性。"
+    ]
+  },
+  {
+    "position": "計算機概論教學助理",
+    "company": "臺北市立大學",
+    "location": "Taiwan",
+    "period": "2024/10 - 2025/06"
+  },
+  {
+    "position": "後端實習生",
+    "company": "台灣積體電路製造股份有限公司",
+    "location": "Taiwan",
+    "period": "2024/07 - 2024/08",
+    "achievements": [
+      "協助在 Java Spring Boot 框架上為內部系統增加錯誤處理與告警功能，並以推播通知或電話告知對應人員。",
+      "使用 JUnit 撰寫程式碼測試，同時優化現有程式碼，提升測試覆蓋率與改善程式碼品質。"
+    ]
+  },
+  {
+    "position": "iOS 行動應用程式開發實習生",
+    "company": "網路家庭國際資訊股份有限公司",
+    "location": "Taiwan",
+    "period": "2023/07 - 2023/08",
+    "achievements": [
+      "參與公司內部 APP 改寫專案，將 PChome 24h APP 重新以 Swift + UIKit + SnapKit 開發。負責「公告訊息」、「常見問題」、「聯絡我們」、「到貨說明」等頁面的開發並順利上線。"
+    ]
+  },
+  {
+    "position": "學生請假系統開發 & 維護",
+    "company": "臺北市立大學-計算機與網路中心",
+    "location": "Taiwan",
+    "period": "2022/09 - 2025/02",
+    "achievements": [
+      "管理並維護 Development、Stage、Production 環境",
+      "Production 環境錯誤回報處理、回覆與日常維護",
+      "Log 及其它系統監控數據備份與刪除",
+      "使用 GitHub Action 建立自動化 CI/CD pipeline 涵蓋程式碼格式檢查、 tag and release、 build Docker image 以及自動部署至 Development Server",
+      "使用 Grafana + Prometheus + cAdvisor 以及 Loki 進行伺服器狀態監控與 Log 收集",
+      "使用 FastAPI 開發多個 API，並與學校校務系統串接。同時與校務系統廠商合作解決 API 問題",
+      "招募、面試、培訓新加入的成員",
+      "對計中職員進行培訓並錄影紀錄，撰寫交接文件，完整完成系統交接。",
+      "上線一個月內累積使用人數達4000人",
+      "每日使用人數約400人"
+    ]
+  },
+  {
+    "position": "自由接案",
+    "location": "Taiwan",
+    "period": "2022/07 - 2022/08",
+    "achievements": ["Android App 功能開發以及撰寫後端影像資料接收 API"]
+  },
+  {
+    "position": "軟體研究社社團指導老師",
+    "company": "國立竹北高級中學",
+    "location": "Taiwan",
+    "period": "2022/02 - 2022/06",
+    "achievements": [
+      "指導學弟妹 C/C++ 程式設計，並提供作業練習",
+      "帶領學弟妹使用 Vue 搭配 Firebase 開發合作社訂餐系統"
+    ]
+  }
+]

@@ -34,4 +34,28 @@ const works = defineCollection({
 	}),
 });
 
-export const collections = { 'blog': blog, 'works': works };
+const experience = defineCollection({
+	loader: glob({ base: './src/content/about', pattern: '**/experience.json' }),
+	schema: z.array(
+		z.object({
+			position: z.string(),
+			company: z.string().optional(),
+			location: z.string(),
+			period: z.string(),
+			achievements: z.array(z.string()).optional()
+		})
+	),
+});
+
+const skills = defineCollection({
+	loader: glob({ base: './src/content/about', pattern: '**/skills.json' }),
+	schema: z.array(
+		z.object({
+			title: z.string(),
+			icon: z.string(),
+			skills: z.array(z.string())
+		})
+	),
+});
+
+export const collections = { 'blog': blog, 'works': works, 'experience': experience, 'skills': skills };

@@ -3,7 +3,15 @@ import ExperienceSection from "@/components/about/ExperienceSection.astro";
 import HeroBanner from "@/components/about/HeroBanner.astro";
 import SkillsSection from "@/components/about/SkillsSection.astro";
 import Footer from "@/components/Footer.astro";
+import { languages } from "@/i18n/ui";
 import Base from "@/layouts/BaseLayout.astro";
+
+export async function getStaticPaths() {
+  return Object.keys(languages).map((lang) => ({
+    params: { lang },
+    props: { lang },
+  }));
+}
 ---
 
 <Base>

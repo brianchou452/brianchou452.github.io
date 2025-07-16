@@ -1,39 +1,11 @@
 ---
-import { skills } from "@/content/about/zh-tw/data";
 import SkillCard from "./SkillCard.astro";
+import { getLangFromUrl } from "@/i18n/utils";
+import { getEntry } from "astro:content";
 
-const skillCategories = [
-  {
-    title: "Programming Languages",
-    icon: "💻",
-    skills: skills.programmingLanguages,
-  },
-  {
-    title: "Frontend Development",
-    icon: "🎨",
-    skills: skills.frontendDevelopment,
-  },
-  {
-    title: "Backend Development",
-    icon: "⚙️",
-    skills: skills.backendDevelopment,
-  },
-  {
-    title: "Database & Storage",
-    icon: "🗄️",
-    skills: skills.databaseAndStorage,
-  },
-  {
-    title: "Cloud & DevOps",
-    icon: "☁️",
-    skills: skills.cloudAndDevOps,
-  },
-  {
-    title: "Tools & Services",
-    icon: "🧰",
-    skills: skills.toolsAndServices,
-  },
-];
+const lang = getLangFromUrl(Astro.url);
+
+const skillCategories = await getEntry("skills", `${lang}/skills`);
 ---
 
 <section
@@ -51,7 +23,7 @@ const skillCategories = [
 
     <div class="skills-container space-y-6" data-motion="container">
       {
-        skillCategories.map((category, index) => (
+        skillCategories?.data.map((category, index) => (
           <div data-motion="slideInUp" data-delay={index * 0.3}>
             <SkillCard
               title={category.title}
