@@ -10,7 +10,7 @@ sourceLink: "https://github.com/emn178/markdown"
 draft: false
 ---
 
-# Markdown Tutorial [English]
+# This page is still under development, please wait for the next update
 
 A markdown example shows how to write a markdown file. This document integrates core syntax and extensions (GMF).
 

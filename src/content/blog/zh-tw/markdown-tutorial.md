@@ -11,7 +11,7 @@ draft: false
 cover: /src/assets/blog/學生請假系統.png
 ---
 
-# Markdown Tutorial 中文
+# 部落格功能還在開發中，敬請期待
 
 A markdown example shows how to write a markdown file. This document integrates core syntax and extensions (GMF).
 
