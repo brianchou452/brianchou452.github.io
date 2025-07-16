@@ -1,0 +1,295 @@
+---
+import { languages } from "../i18n/ui";
+import { getLangFromUrl } from "../i18n/utils";
+
+// 取得當前語言
+const currentLang = getLangFromUrl(Astro.url);
+---
+
+<div class="language-picker">
+  <div class="dropdown">
+    <button
+      class="dropdown-button"
+      id="language-button"
+      aria-haspopup="true"
+      aria-expanded="false"
+    >
+      <span class="current-language">{languages[currentLang]}</span>
+      <svg
+        class="dropdown-icon"
+        width="12"
+        height="12"
+        viewBox="0 0 12 12"
+        fill="none"
+      >
+        <path
+          d="M3 4.5L6 7.5L9 4.5"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+    </button>
+    <div class="dropdown-menu" id="language-menu">
+      {
+        Object.entries(languages).map(([lang, label]) => (
+          <a
+            href={`/${lang}/`}
+            class={`dropdown-item ${lang === currentLang ? "active" : ""}`}
+            data-lang={lang}
+          >
+            {label}
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<style>
+  .language-picker {
+    position: relative;
+    z-index: 1000;
+  }
+
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  .dropdown-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--card-color-transparent);
+    border: 1px solid var(--primary-color-transparent);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 100px;
+    justify-content: space-between;
+    backdrop-filter: blur(8px);
+  }
+
+  .dropdown-button:hover {
+    background: var(--primary-color-hover);
+    border-color: var(--primary-color);
+    color: var(--text-color);
+  }
+
+  .dropdown-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-color-transparent);
+  }
+
+  .current-language {
+    font-weight: 500;
+  }
+
+  .dropdown-icon {
+    transition: transform 0.2s ease;
+    opacity: 0.7;
+    color: var(--text-color-lighten);
+  }
+
+  .dropdown.open .dropdown-icon {
+    transform: rotate(180deg);
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: var(--card-color-transparent);
+    border: 1px solid var(--primary-color-transparent);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(12px);
+    overflow: hidden;
+  }
+
+  .dropdown.open .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  /* 當空間不足時，選單顯示在上方 */
+  .dropdown.drop-up .dropdown-menu {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: 4px;
+    transform: translateY(8px);
+  }
+
+  .dropdown.drop-up.open .dropdown-menu {
+    transform: translateY(0);
+  }
+
+  .dropdown-item {
+    display: block;
+    padding: 10px 12px;
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    border-radius: 6px;
+    margin: 2px;
+  }
+
+  .dropdown-item:hover {
+    background: var(--primary-color-lighten);
+    color: var(--primary-color);
+  }
+
+  .dropdown-item.active {
+    background: var(--primary-color-transparent);
+    color: var(--primary-color);
+  }
+
+  /* 深色模式下的額外調整 */
+  :root.dark .dropdown-menu {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  :root.dark .dropdown-item:hover {
+    background: var(--primary-color-hover);
+    color: var(--primary-color);
+  }
+
+  :root.dark .dropdown-item.active {
+    background: var(--primary-color-transparent);
+    color: var(--primary-color);
+  }
+</style>
+
+<script>
+  function initLanguagePicker() {
+    const dropdownButton = document.getElementById(
+      "language-button"
+    ) as HTMLButtonElement;
+    const dropdownMenu = document.getElementById(
+      "language-menu"
+    ) as HTMLDivElement;
+    const dropdown = dropdownButton?.parentElement as HTMLDivElement;
+
+    if (!dropdownButton || !dropdownMenu || !dropdown) return;
+
+    function checkDropdownPosition() {
+      const rect = dropdown.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const menuHeight = 120; // 估計的選單高度
+
+      // 如果下方空間不足且上方空間更充足，則向上展開
+      if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+        dropdown.classList.add("drop-up");
+      } else {
+        dropdown.classList.remove("drop-up");
+      }
+    }
+
+    function toggleDropdown() {
+      const isOpen = dropdown.classList.contains("open");
+
+      if (isOpen) {
+        closeDropdown();
+      } else {
+        openDropdown();
+      }
+    }
+
+    function openDropdown() {
+      checkDropdownPosition();
+      dropdown.classList.add("open");
+      dropdownButton.setAttribute("aria-expanded", "true");
+      document.addEventListener("click", handleOutsideClick);
+      document.addEventListener("keydown", handleKeydown);
+      document.addEventListener("scroll", checkDropdownPosition, {
+        passive: true,
+      });
+      window.addEventListener("resize", checkDropdownPosition, {
+        passive: true,
+      });
+    }
+
+    function closeDropdown() {
+      dropdown.classList.remove("open");
+      dropdownButton.setAttribute("aria-expanded", "false");
+      document.removeEventListener("click", handleOutsideClick);
+      document.removeEventListener("keydown", handleKeydown);
+      document.removeEventListener("scroll", checkDropdownPosition);
+      window.removeEventListener("resize", checkDropdownPosition);
+    }
+
+    function handleOutsideClick(event: Event) {
+      if (event.target && !dropdown.contains(event.target as Node)) {
+        closeDropdown();
+      }
+    }
+
+    function handleKeydown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeDropdown();
+        dropdownButton.focus();
+      }
+    }
+
+    dropdownButton.addEventListener("click", toggleDropdown);
+
+    // 處理鍵盤導航
+    dropdownButton.addEventListener("keydown", (event: KeyboardEvent) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        toggleDropdown();
+      } else if (event.key === "ArrowDown") {
+        event.preventDefault();
+        openDropdown();
+        const firstItem = dropdownMenu.querySelector(
+          ".dropdown-item"
+        ) as HTMLElement;
+        firstItem?.focus();
+      }
+    });
+
+    // 為下拉選項添加鍵盤導航
+    const items = dropdownMenu.querySelectorAll(".dropdown-item");
+    items.forEach((item, index) => {
+      item.addEventListener("keydown", (event: Event) => {
+        const keyboardEvent = event as KeyboardEvent;
+        if (keyboardEvent.key === "ArrowDown") {
+          event.preventDefault();
+          const nextItem =
+            (items[index + 1] as HTMLElement) || (items[0] as HTMLElement);
+          nextItem.focus();
+        } else if (keyboardEvent.key === "ArrowUp") {
+          event.preventDefault();
+          const prevItem =
+            (items[index - 1] as HTMLElement) ||
+            (items[items.length - 1] as HTMLElement);
+          prevItem.focus();
+        } else if (keyboardEvent.key === "Escape") {
+          closeDropdown();
+          dropdownButton.focus();
+        }
+      });
+    });
+  }
+
+  // 初始化
+  document.addEventListener("DOMContentLoaded", initLanguagePicker);
+
+  // 處理 Astro 的頁面導航
+  document.addEventListener("astro:page-load", initLanguagePicker);
+</script>

@@ -1,0 +1,62 @@
+---
+import { languages } from "@/i18n/ui";
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+import PostArchiveLayout from "@/layouts/PostArchiveLayout.astro";
+import { GetCategories, type Archive } from "@/utils/content";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+export async function getStaticPaths() {
+  const allPaths = [];
+
+  for (const lang of Object.keys(languages)) {
+    const categories = await GetCategories(lang);
+    const categoryList = Array.from(categories.keys());
+
+    for (const category of categoryList) {
+      allPaths.push({
+        params: { lang, category },
+        props: { lang },
+      });
+    }
+  }
+
+  return allPaths;
+}
+
+const { lang: currentLang } = Astro.params;
+const categories = await GetCategories(currentLang);
+const { category } = Astro.params;
+
+/**
+ * Formats an archive map of posts associated with a specified category.
+ *
+ * The function retrieves a list of posts and groups them by their publication
+ * year, storing them in a Map where each key is a year (number) and the value
+ * is an array of posts. It also retrieves the category’s display name.
+ *
+ * @returns An object containing:
+ *     - archiveMap {Map<number, Array<Archive>>} A map of year to array of posts.
+ *     - categoryName {string} The display-friendly name of the category.
+ */
+async function FormatArchiveMap() {
+  const posts = categories.get(category)!.posts;
+  const categoryName = categories.get(category)!.name;
+  const archiveMap = new Map<number, Array<Archive>>();
+  posts.forEach((post) => {
+    const year = post.date.getFullYear();
+    if (archiveMap.has(year)) archiveMap.get(year)!.push(post);
+    else archiveMap.set(year, [post]);
+  });
+  return { archiveMap, categoryName };
+}
+
+const { archiveMap, categoryName } = await FormatArchiveMap();
+---
+
+<PostArchiveLayout
+  archiveMap={archiveMap}
+  title={categoryName}
+  subTitle={t("pages.categories.archive")}
+/>

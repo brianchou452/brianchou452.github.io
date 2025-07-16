@@ -1,0 +1,88 @@
+---
+import Footer from "@/components/Footer.astro";
+import ProjectsBanner from "@/components/works/ProjectsBanner.astro";
+import WorkCard from "@/components/works/WorkCard.astro";
+import { languages } from "@/i18n/ui";
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+import Base from "@/layouts/BaseLayout.astro";
+import { GetSortedWorks } from "@/utils/content";
+import { IdToSlug } from "@/utils/hash";
+
+export async function getStaticPaths() {
+  const allPaths = [];
+  for (const lang of Object.keys(languages)) {
+    allPaths.push({
+      params: { lang },
+      props: { lang },
+    });
+  }
+  return allPaths;
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// 獲取作品集內容
+const works = await GetSortedWorks(lang);
+
+// 為 banner 動畫準備作品圖片
+const workImages = works.map((work) => ({
+  id: work.id,
+  cover: work.data.cover,
+  title: work.data.title,
+  slug: `${IdToSlug(work.id.split("/").pop() || work.id)}`,
+}));
+
+const images = import.meta.glob<{ default: ImageMetadata }>(
+  "src/assets/works/**/*.{jpeg,jpg,png,gif}"
+);
+works.forEach((work) => {
+  if (work.data.cover && !images[work.data.cover])
+    throw new Error(
+      `"${work.data.cover}" does not exist in glob: "src/assets/works/**/*.{jpeg,jpg,png,gif}"`
+    );
+});
+---
+
+<Base title={t("nav.works")} description="我的作品集展示">
+  <ProjectsBanner works={workImages} />
+  <div class="w-full space-y-8">
+    <div class="onload-animation">
+      <section class="py-16 px-6 max-w-6xl mx-auto">
+        <!-- 作品網格 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {
+            works.map((work) => {
+              const originalSlug = work.id.split("/").pop() || work.id;
+              return (
+                <WorkCard
+                  title={work.data.title}
+                  description={work.data.description}
+                  cover={work.data.cover}
+                  tags={work.data.tags}
+                  href={`/${lang}/works/${IdToSlug(originalSlug)}`}
+                />
+              );
+            })
+          }
+        </div>
+
+        <!-- 如果沒有作品 -->
+        {
+          works.length === 0 && (
+            <div class="text-center py-16">
+              <div class="text-6xl mb-4">🚧</div>
+              <h3 class="text-2xl font-bold text-[var(--text-color)] mb-2">
+                {t("works.empty")}
+              </h3>
+              <p class="text-[var(--text-color-lighten)]">
+                {t("works.emptyDescription")}
+              </p>
+            </div>
+          )
+        }
+      </section>
+      <Footer />
+    </div>
+  </div>
+</Base>

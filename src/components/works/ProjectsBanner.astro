@@ -1,0 +1,310 @@
+---
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+import { Image } from "astro:assets";
+
+interface Work {
+  id: string;
+  cover?: string;
+  title: string;
+  slug: string;
+}
+
+interface Props {
+  works: Work[];
+}
+
+const { works } = Astro.props;
+
+// 創建足夠的作品項目來填滿滾動條
+const duplicatedWorks = [...works, ...works, ...works, ...works];
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const bannerTitle = t("works.title");
+const images = import.meta.glob<{ default: ImageMetadata }>(
+  "src/assets/works/**/*.{jpeg,jpg,png,gif}"
+);
+---
+
+<section
+  class="relative overflow-hidden py-28"
+  style="background-color: var(--background-color);"
+>
+  <!-- 背景裝飾 (讓背景色由 --background-color 控制) -->
+
+  <!-- 動畫容器 -->
+  <div class="relative">
+    <!-- 上排 - 左到右 -->
+    <div class="works-banner-row mb-8" data-direction="left-to-right">
+      <div class="works-scroll-container">
+        {
+          duplicatedWorks.map((work, index) => (
+            <div
+              class="work-item"
+              data-work-id={work.slug}
+              data-work-lang={lang}
+            >
+              {work.cover ? (
+                <Image
+                  src={images[work.cover]()}
+                  alt={work.title}
+                  loading={"lazy"}
+                  class="work-image"
+                />
+              ) : (
+                <div class="work-placeholder">
+                  <span class="placeholder-text">{work.title.charAt(0)}</span>
+                </div>
+              )}
+              <div class="work-overlay">
+                <span class="work-title">{work.title}</span>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- 下排 - 右到左 -->
+    <div class="works-banner-row" data-direction="right-to-left">
+      <div class="works-scroll-container">
+        {
+          duplicatedWorks.map((work, index) => (
+            <div
+              class="work-item"
+              data-work-id={work.slug}
+              data-work-lang={lang}
+            >
+              {work.cover ? (
+                <Image
+                  src={images[work.cover]()}
+                  alt={work.title}
+                  loading={"lazy"}
+                  class="work-image"
+                />
+              ) : (
+                <div class="work-placeholder">
+                  <span class="placeholder-text">{work.title.charAt(0)}</span>
+                </div>
+              )}
+              <div class="work-overlay">
+                <span class="work-title">{work.title}</span>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- 標題覆蓋層 -->
+  <div
+    class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none"
+  >
+    <!-- Div for backdrop-filter and mask -->
+    <div
+      class="py-4 px-8 md:py-6 md:px-12 rounded-3xl backdrop-blur-lg"
+      style="
+        background-color: oklch(from var(--card-color) l c h / 0.02); /* Minimal background to trigger backdrop */
+        -webkit-mask-image: radial-gradient(ellipse at center, black 25%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.20) 65%, transparent 80%);
+        mask-image: radial-gradient(ellipse at center, black 25%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.20) 65%, transparent 80%);
+        -webkit-mask-size: 100% 100%;
+        mask-size: 100% 100%;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+      "
+    >
+      <h1
+        class="text-5xl md:text-7xl font-bold"
+        style="color: var(--text-color);"
+      >
+        {bannerTitle}
+      </h1>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // 添加點擊事件
+    document.querySelectorAll(".work-item").forEach((item) => {
+      item.addEventListener("click", () => {
+        const workId = item.getAttribute("data-work-id");
+        const workLang = item.getAttribute("data-work-lang");
+
+        if (workId && workLang) {
+          // 添加點擊動畫
+          (item as HTMLElement).style.transform = "scale(0.95)";
+
+          // 延遲跳轉以顯示動畫
+          setTimeout(() => {
+            if (window.swup) {
+              window.swup.navigate(`/${workLang}/works/${workId}`);
+            } else {
+              window.location.href = `/${workLang}/works/${workId}`;
+            }
+          }, 200);
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  .works-banner-row {
+    height: 200px;
+    overflow: hidden;
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 10%,
+      black 90%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 10%,
+      black 90%,
+      transparent 100%
+    );
+  }
+
+  .works-scroll-container {
+    display: flex;
+    gap: 1rem;
+    height: 100%;
+    will-change: transform;
+    animation: scroll-left 30s linear infinite;
+  }
+
+  .works-banner-row[data-direction="right-to-left"] .works-scroll-container {
+    animation: scroll-right 30s linear infinite;
+  }
+
+  @keyframes scroll-left {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-25%);
+    }
+  }
+
+  @keyframes scroll-right {
+    0% {
+      transform: translateX(-25%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  .work-item {
+    flex-shrink: 0;
+    width: 300px;
+    height: 180px;
+    border-radius: 1rem;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1); /* Tailwind shadow-lg 替代 */
+    background-color: var(--card-color); /* 卡片背景色 */
+  }
+
+  .dark .work-item {
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1); /* Tailwind shadow-xl for dark */
+  }
+
+  .work-item:hover {
+    transform: translateY(-5px) scale(1.03); /* 稍微放大效果 */
+  }
+
+  .work-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .work-item:hover .work-image {
+    transform: scale(1.1);
+  }
+
+  .work-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .placeholder-text {
+    font-size: 4rem;
+    font-weight: bold;
+    color: var(--text-color-lighten); /* 使用 CSS 變數 */
+    opacity: 0.7;
+  }
+
+  .work-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.8) 0%,
+      rgba(0, 0, 0, 0.4) 50%,
+      transparent 100%
+    );
+    display: flex;
+    align-items: flex-end;
+    padding: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .work-item:hover .work-overlay {
+    opacity: 1;
+  }
+
+  /* Default title style (Light mode, non-hover) */
+  .work-title {
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 1.2rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Softer shadow for light mode text */
+    transition: color 0.3s ease;
+  }
+
+  /* Light mode, on hover: Title should be light to contrast with dark overlay */
+  .work-item:hover .work-title {
+    color: oklch(100% 0 0 / 95%); /* White/very light text */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); /* Stronger shadow for light text on dark overlay */
+  }
+
+  /* Dark mode, non-hover: Title is already light */
+  .dark .work-title {
+    color: oklch(100% 0 0 / 95%);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Dark mode, on hover: Title remains light, as overlay is dark. No specific change needed from .dark .work-title if it's already correct. */
+  /* However, to be explicit or if any adjustment is needed for hover on dark: */
+  .dark .work-item:hover .work-title {
+    color: oklch(100% 0 0 / 98%); /* Ensure it's very bright */
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  }
+
+  /* 確保動畫流暢 */
+  @media (prefers-reduced-motion: reduce) {
+    .works-scroll-container {
+      animation: none;
+    }
+  }
+</style>

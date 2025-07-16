@@ -1,0 +1,103 @@
+---
+import { defaultLang, languages } from "@/i18n/ui";
+import PostLayout from "@/layouts/PostLayout.astro";
+import { IdToSlug } from "@/utils/hash";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const pages = await getCollection("blog");
+
+  const paths = [];
+
+  // Create paths for each post in its original language
+  for (const page of pages) {
+    const [lang, ...slug] = page.id.split("/");
+    paths.push({
+      params: { lang, slug: IdToSlug(slug.join("/")) },
+      props: { entry: page },
+    });
+  }
+
+  // Create fallback paths for posts that don't exist in non-default languages
+  const supportedLanguages = Object.keys(languages);
+
+  for (const lang of supportedLanguages) {
+    if (lang === defaultLang) continue;
+
+    const langPosts = pages.filter((page) => page.id.startsWith(`${lang}/`));
+    const defaultPosts = pages.filter((page) =>
+      page.id.startsWith(`${defaultLang}/`)
+    );
+
+    const langPostSlugs = new Set(
+      langPosts.map((page) => page.id.split("/").slice(1).join("/"))
+    );
+
+    // Add fallback paths for posts that don't exist in this language
+    for (const defaultPost of defaultPosts) {
+      const [, ...slug] = defaultPost.id.split("/");
+      const slugPath = slug.join("/");
+
+      if (!langPostSlugs.has(slugPath)) {
+        paths.push({
+          params: { lang, slug: IdToSlug(slugPath) },
+          props: { entry: defaultPost, isFallback: true },
+        });
+      }
+    }
+  }
+
+  return paths;
+}
+const { entry, isFallback } = Astro.props;
+const { Content } = await render(entry);
+---
+
+{
+  !entry.data.licenseName && (
+    <PostLayout
+      title={entry.data.title}
+      subTitle={entry.data.description}
+      bannerImage={entry.data.cover}
+      published={entry.data.published}
+    >
+      <div
+        class="hidden"
+        data-pagefind-body
+        data-pagefind-weight="10"
+        data-pagefind-meta="title"
+      >
+        {entry.data.title}
+      </div>
+      <div data-pagefind-body>
+        <Content />
+      </div>
+    </PostLayout>
+  )
+}
+{
+  entry.data.licenseName && (
+    <PostLayout
+      title={entry.data.title}
+      subTitle={entry.data.description}
+      bannerImage={entry.data.cover}
+      published={entry.data.published}
+      license={{ name: entry.data.licenseName, url: entry.data.licenseUrl }}
+      author={entry.data.author}
+      sourceLink={entry.data.sourceLink}
+    >
+      <div
+        class="hidden"
+        data-pagefind-body
+        data-pagefind-weight="10"
+        data-pagefind-meta="title"
+      >
+        {entry.data.title}
+      </div>
+      <div data-pagefind-body>
+        <Content />
+      </div>
+    </PostLayout>
+  )
+}
+<!-- <Fragment set:html={tocHTMLString} /> -->

@@ -1,0 +1,27 @@
+---
+import { languages } from "@/i18n/ui";
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+import ChipLayout from "@/layouts/ChipLayout.astro";
+import { GetTags } from "@/utils/content";
+
+export async function getStaticPaths() {
+  return Object.keys(languages).map((lang) => ({
+    params: { lang },
+    props: { lang },
+  }));
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const tags = [...(await GetTags(lang)).values()].sort();
+const chips = tags.map((tag) => {
+  return {
+    name: tag.name,
+    slug: tag.slug,
+    subChip: tag.posts.length.toString(),
+  };
+});
+---
+
+<ChipLayout chips={chips} title={t("pages.tags.title")} />

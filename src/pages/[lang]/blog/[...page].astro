@@ -1,0 +1,72 @@
+---
+// Component imports
+import PostCard from "@/components/PostCard.astro";
+import Pagination from "@/components/controllers/Pagination.astro";
+import Main from "@/layouts/MainLayout.astro";
+// Utils
+import { languages } from "@/i18n/ui";
+import { GetSortedPosts } from "@/utils/content";
+import type { PaginateFunction } from "astro";
+
+export async function getStaticPaths({
+  paginate,
+}: {
+  paginate: PaginateFunction;
+}) {
+  const allPaths = [];
+
+  for (const lang of Object.keys(languages)) {
+    const postCollections = await GetSortedPosts(lang);
+    const paginatedPosts = paginate(postCollections, {
+      pageSize: 6,
+      params: { lang },
+      props: { lang },
+    });
+    allPaths.push(...paginatedPosts);
+  }
+
+  return allPaths;
+}
+const { page } = Astro.props;
+const { lang } = Astro.params;
+---
+
+<Main>
+  <div class="space-y-8">
+    <div class="w-full space-y-4">
+      {
+        page.data.map((entry, index) => (
+          <div
+            class="onload-animation"
+            style={`animation-delay: calc(var(--onload-animation-delay) + ${index + 1} * var(--onload-animation-interval));`}
+          >
+            <PostCard
+              id={entry.id}
+              title={entry.data.title}
+              published={entry.data.published}
+              category={entry.data.category}
+              tags={entry.data.tags}
+              description={entry.data.description}
+              image={entry.data.cover}
+              lang={lang}
+              readingMetadata={
+                entry.rendered
+                  ? (entry.rendered.metadata as any)?.frontmatter
+                      ?.readingMetadata
+                  : { time: 0, wordCount: 0 }
+              }
+            />
+          </div>
+        ))
+      }
+    </div>
+    <Pagination
+      class="onload-animation"
+      lastPage={page.lastPage}
+      current={page.currentPage}
+      prevURL={page.url.prev}
+      nextURL={page.url.next}
+      style={`animation-delay: calc(var(--onload-animation-delay) + ${page.data.length + 1} * var(--onload-animation-interval));`}
+    />
+  </div>
+</Main>

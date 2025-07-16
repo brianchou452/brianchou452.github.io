@@ -1,0 +1,48 @@
+---
+import SideBar from "@/components/SideBar.astro";
+import Footer from "../components/Footer.astro";
+import Base from "./BaseLayout.astro";
+
+export interface Props {
+  title?: string;
+  subTitle?: string;
+  bannerImage?: string;
+  slug?: string;
+}
+---
+
+<Base>
+  <div id="banner" class="banner onload-animation-fade-in p-10">
+    <!-- 空白的區域，避免 navbar 重疊在內容上 -->
+  </div>
+
+  <div class="main-container my-10">
+    <div class="flex flex-row items-start xl:space-x-4">
+      <div class="side-bar">
+        <SideBar />
+      </div>
+      <div class="transition-leaving w-full space-y-8">
+        <div class="content onload-animation">
+          <slot />
+        </div>
+        <Footer />
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  @reference "../styles/global.css";
+  .main-container {
+    @apply w-full md:min-w-[80%] md:max-w-[80%] lg:min-w-[var(--page-width-lg)] lg:max-w-[var(--page-width-lg)] xl:min-w-[var(--page-width-xl)] xl:max-w-[var(--page-width-xl)];
+    @apply md:mx-auto;
+  }
+
+  .side-bar {
+    @apply hidden min-w-[248px] xl:block;
+  }
+
+  .content {
+    @apply xl:w-[calc(var(--page-width-xl)-264px)];
+  }
+</style>

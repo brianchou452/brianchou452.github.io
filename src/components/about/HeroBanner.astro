@@ -1,0 +1,363 @@
+---
+import { Image } from "astro:assets";
+import BannerImage from "@/assets/banner.svg";
+---
+
+<section id="關於我" class="hero-banner">
+  <div class="image-section">
+    <div class="banner-image-container">
+      <Image src={BannerImage} alt="Banner Picture" class="banner-image" />
+      <div class="overlay"></div>
+    </div>
+  </div>
+
+  <div class="content-section">
+    <div class="text-content">
+      <h1 class="hero-title">Brian Chou</h1>
+      <div class="typing-container">
+        <div class="text-lines">
+          <div class="text-line" id="line-0"></div>
+          <div class="text-line" id="line-1"></div>
+          <div class="text-line" id="line-2"></div>
+        </div>
+        <span class="cursor">|</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { animate } from "motion";
+
+  const startAnimation = () => {
+    const texts = ["嗨嗨，", "我叫 Brian 也可以叫我海獺，", "很高興認識你！"];
+
+    let textIndex = 0;
+    let charIndex = 0;
+    let currentText = "";
+
+    function typeWriter() {
+      if (textIndex >= texts.length) {
+        // 所有文字都打完了，重新開始動畫
+        setTimeout(() => {
+          // 清空所有行
+          texts.forEach((_, index) => {
+            const lineElement = document.getElementById(`line-${index}`);
+            if (lineElement) {
+              lineElement.textContent = "";
+            }
+          });
+          textIndex = 0;
+          charIndex = 0;
+          currentText = "";
+          updateCursorPosition();
+          typeWriter();
+        }, 3000); // 等待3秒後重新開始
+        return;
+      }
+
+      const fullText = texts[textIndex];
+      currentText = fullText.substring(0, charIndex + 1);
+      charIndex++;
+
+      updateDisplay();
+
+      if (charIndex > fullText.length) {
+        // 當前行打完，移到下一行
+        textIndex++;
+        charIndex = 0;
+        currentText = "";
+        updateCursorPosition();
+
+        // 短暫停頓後繼續下一行
+        setTimeout(typeWriter, 800);
+        return;
+      }
+
+      const speed = 100;
+      setTimeout(typeWriter, speed);
+    }
+
+    function updateDisplay() {
+      const currentLineElement = document.getElementById(`line-${textIndex}`);
+      if (currentLineElement) {
+        currentLineElement.textContent = currentText;
+      }
+      updateCursorPosition();
+    }
+
+    function updateCursorPosition() {
+      const cursor = document.querySelector(".cursor") as HTMLElement;
+      if (!cursor) return;
+
+      if (textIndex >= texts.length) {
+        // 所有文字打完，游標在最後一行的最後一個字後面
+        const lastLineElement = document.getElementById(
+          `line-${texts.length - 1}`
+        );
+        if (lastLineElement) {
+          // 創建臨時元素來測量最後一行文字的實際寬度
+          const tempSpan = document.createElement("span");
+          tempSpan.style.visibility = "hidden";
+          tempSpan.style.position = "absolute";
+          tempSpan.style.fontSize = getComputedStyle(lastLineElement).fontSize;
+          tempSpan.style.fontFamily =
+            getComputedStyle(lastLineElement).fontFamily;
+          tempSpan.textContent = lastLineElement.textContent || "";
+          document.body.appendChild(tempSpan);
+
+          const textWidth = tempSpan.offsetWidth;
+          document.body.removeChild(tempSpan);
+
+          cursor.style.left = `${textWidth + 2}px`;
+          cursor.style.top = `${lastLineElement.offsetTop}px`;
+        }
+      } else {
+        // 正在打字，游標跟隨當前行的當前文字末尾
+        const currentLineElement = document.getElementById(`line-${textIndex}`);
+        if (currentLineElement) {
+          // 創建臨時元素來測量當前文字的寬度
+          const tempSpan = document.createElement("span");
+          tempSpan.style.visibility = "hidden";
+          tempSpan.style.position = "absolute";
+          tempSpan.style.fontSize =
+            getComputedStyle(currentLineElement).fontSize;
+          tempSpan.style.fontFamily =
+            getComputedStyle(currentLineElement).fontFamily;
+          tempSpan.textContent = currentText;
+          document.body.appendChild(tempSpan);
+
+          const textWidth = tempSpan.offsetWidth;
+          document.body.removeChild(tempSpan);
+
+          cursor.style.left = `${textWidth + 2}px`;
+          cursor.style.top = `${currentLineElement.offsetTop}px`;
+        }
+      }
+    }
+
+    // 啟動打字機效果
+    setTimeout(typeWriter, 1000);
+
+    // 視窗大小改變時重新定位游標
+    window.addEventListener("resize", updateCursorPosition);
+
+    // 標題動畫
+    animate(
+      ".hero-title",
+      {
+        opacity: [0, 1],
+        y: [30, 0],
+      },
+      {
+        duration: 1,
+        delay: 0.5,
+      }
+    );
+
+    // 打字容器動畫
+    animate(
+      ".typing-container",
+      {
+        opacity: [0, 1],
+      },
+      {
+        duration: 0.8,
+        delay: 1.2,
+      }
+    );
+  };
+
+  if (document.readyState === "complete") {
+    startAnimation();
+  } else {
+    document.addEventListener("DOMContentLoaded", () => startAnimation());
+  }
+</script>
+
+<style>
+  @reference "../../styles/global.css";
+  .hero-banner {
+    position: relative;
+    height: 100vh;
+    height: 100dvh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    margin-left: calc(-50vw + 50%);
+    width: 100vw;
+    overflow: hidden;
+  }
+
+  .image-section {
+    position: relative;
+    height: 35vh;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .banner-image-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .banner-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .content-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .text-content {
+    text-align: left;
+    max-width: 800px;
+    width: 100%;
+  }
+
+  .hero-title {
+    font-size: clamp(3rem, 10vw, 6rem);
+    font-weight: 700;
+    margin: 0 0 2rem 0;
+    text-shadow: none;
+    font-family: var(--brand-font);
+    opacity: 0;
+    color: var(--text-color);
+  }
+
+  .typing-container {
+    font-size: clamp(1.3rem, 4vw, 2rem);
+    min-height: 4rem;
+    display: block;
+    text-shadow: none;
+    opacity: 0;
+    position: relative;
+    color: var(--text-color-lighten);
+  }
+
+  .text-lines {
+    position: relative;
+    min-height: calc(1.6em * 3); /* 固定高度容納3行文字 */
+  }
+
+  .text-line {
+    font-family: var(--primary-font);
+    line-height: 1.6;
+    text-align: left;
+    display: block;
+    height: 1.6em;
+    margin: 0;
+    padding: 0;
+  }
+
+  .cursor {
+    display: inline-block;
+    margin-left: 0px;
+    animation: blink 1s infinite;
+    font-weight: bold;
+    color: var(--text-color-lighten);
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+  }
+
+  @keyframes blink {
+    0%,
+    50% {
+      opacity: 1;
+    }
+    51%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* 手機版優化 */
+  @media (max-width: 768px) {
+    .hero-banner {
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    .image-section {
+      height: 30vh;
+    }
+
+    .content-section {
+      padding: 1.5rem;
+    }
+
+    .hero-title {
+      margin-bottom: 1.5rem;
+    }
+
+    .typing-container {
+      min-height: 3rem;
+      font-size: clamp(1.1rem, 5vw, 1.4rem);
+    }
+  }
+
+  /* 極小螢幕優化 */
+  @media (max-width: 480px) {
+    .image-section {
+      height: 25vh;
+    }
+
+    .content-section {
+      padding: 1rem;
+    }
+
+    .hero-title {
+      margin-bottom: 1rem;
+    }
+  }
+
+  /* 大螢幕優化 */
+  @media (min-width: 1200px) {
+    .content-section {
+      padding: 3rem;
+    }
+
+    .text-content {
+      max-width: 1000px;
+    }
+  }
+
+  /* 橫向模式優化 */
+  @media (orientation: landscape) and (max-height: 600px) {
+    .image-section {
+      height: 40vh;
+    }
+
+    .hero-title {
+      font-size: clamp(2rem, 8vw, 3.5rem);
+      margin-bottom: 1rem;
+    }
+
+    .typing-container {
+      font-size: clamp(1rem, 3vw, 1.3rem);
+    }
+  }
+
+  /* 減少動畫偏好設定支援 */
+  @media (prefers-reduced-motion: reduce) {
+    .cursor {
+      animation: none;
+    }
+
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>

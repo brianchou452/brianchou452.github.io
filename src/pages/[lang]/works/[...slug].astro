@@ -1,0 +1,291 @@
+---
+import FormattedDate from "@/components/FormattedDate.astro";
+import Markdown from "@/components/Markdown.astro";
+import { defaultLang, languages } from "@/i18n/ui";
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+import Main from "@/layouts/MainLayout.astro";
+import { IdToSlug } from "@/utils/hash";
+import { Icon } from "astro-icon/components";
+import { Image } from "astro:assets";
+import { getCollection, render, type CollectionEntry } from "astro:content";
+
+export async function getStaticPaths() {
+  const allWorks = await getCollection("works");
+  const paths = [];
+
+  // 為每個作品創建路由，使用 hash 作為 slug
+  for (const work of allWorks) {
+    const [lang, ...slugParts] = work.id.split("/");
+    const originalSlug = slugParts.join("/");
+    const hashedSlug = IdToSlug(originalSlug);
+
+    paths.push({
+      params: {
+        lang,
+        slug: hashedSlug,
+      },
+      props: { work, originalSlug },
+    });
+  }
+
+  // Create fallback paths for posts that don't exist in non-default languages
+  const supportedLanguages = Object.keys(languages);
+
+  for (const lang of supportedLanguages) {
+    if (lang === defaultLang) continue;
+
+    const langWorks = allWorks.filter((work) => work.id.startsWith(`${lang}/`));
+    const defaultWorks = allWorks.filter((work) =>
+      work.id.startsWith(`${defaultLang}/`)
+    );
+
+    const langWorkSlugs = new Set(
+      langWorks.map((work) => work.id.split("/").slice(1).join("/"))
+    );
+
+    // Add fallback paths for posts that don't exist in this language
+    for (const defaultWork of defaultWorks) {
+      const [, ...slug] = defaultWork.id.split("/");
+      const slugPath = slug.join("/");
+
+      if (!langWorkSlugs.has(slugPath)) {
+        paths.push({
+          params: {
+            lang,
+            slug: IdToSlug(slugPath),
+          },
+          props: { work: defaultWork, originalSlug: slugPath },
+        });
+      }
+    }
+  }
+
+  return paths;
+}
+
+interface Props {
+  work: CollectionEntry<"works">;
+  originalSlug: string;
+}
+
+const { work, originalSlug } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// // 尋找相同作品的其他語言版本（用於 fallback）
+// const allWorks = await GetSortedWorks();
+// let currentWork = work;
+
+// // 如果當前語言沒有對應的作品，嘗試使用 fallback
+// if (!work.id.startsWith(`${lang}/`)) {
+//   // 先嘗試找當前語言版本
+//   const currentLangWork = allWorks.find(
+//     (w) => w.id === `${lang}/${originalSlug}`
+//   );
+//   if (currentLangWork) {
+//     currentWork = currentLangWork;
+//   } else {
+//     // fallback 到預設語言
+//     const defaultLangWork = allWorks.find(
+//       (w) => w.id === `${defaultLang}/${originalSlug}`
+//     );
+//     if (defaultLangWork) {
+//       currentWork = defaultLangWork;
+//     }
+//   }
+// }
+
+const { Content } = await render(work);
+
+const images = import.meta.glob<{ default: ImageMetadata }>(
+  "src/assets/works/**/*.{jpeg,jpg,png,gif}"
+);
+
+// 準備作品資訊
+const {
+  title,
+  description,
+  cover,
+  tags,
+  started,
+  ended,
+  sourceLink,
+  demoLink,
+} = work.data;
+---
+
+<Main title={title}>
+  <!-- 返回按鈕 -->
+  <div class="max-w-6xl mx-auto px-4 pt-8">
+    <a
+      href={`/${lang}/works`}
+      class="inline-flex items-center gap-2 text-[var(--primary-color)] hover:text-[var(--primary-color-dark)] transition-colors duration-200"
+    >
+      <svg
+        class="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 19l-7-7 7-7"></path>
+      </svg>
+      {t("works.backToWorks")}
+    </a>
+  </div>
+
+  <!-- 作品詳情 -->
+  <section class="py-8 px-6 max-w-6xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+      <!-- 作品圖片 -->
+      <div class="space-y-6">
+        {
+          cover && images[cover] ? (
+            <div class="aspect-video rounded-xl overflow-hidden shadow-lg">
+              <Image
+                class="w-full h-full object-cover"
+                src={images[cover]()}
+                alt={title}
+                loading="eager"
+              />
+            </div>
+          ) : (
+            <div class="aspect-video rounded-xl bg-gradient-to-br from-purple-400 to-blue-500 flex items-center justify-center shadow-lg">
+              <span class="text-white text-8xl font-bold opacity-30">
+                {title.charAt(0)}
+              </span>
+            </div>
+          )
+        }
+
+        <!-- 專案連結 -->
+        <div class="flex gap-4">
+          {
+            sourceLink && (
+              <a
+                href={sourceLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center gap-2 px-6 py-3 bg-[var(--primary-color)] text-white rounded-lg hover:bg-[var(--primary-color-dark)] transition-colors duration-200"
+              >
+                <Icon name="line-md:github-loop" size={20} class="text-white" />
+                {t("works.sourceCode")}
+              </a>
+            )
+          }
+          {
+            demoLink && (
+              <a
+                href={demoLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center gap-2 px-6 py-3 bg-[var(--card-color)] border-2 border-[var(--primary-color)] text-[var(--primary-color)] rounded-lg hover:bg-[var(--primary-color)] hover:text-white transition-all duration-200"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+                {t("works.demo")}
+              </a>
+            )
+          }
+        </div>
+      </div>
+
+      <!-- 作品資訊 -->
+      <div class="space-y-6">
+        <div>
+          <h1 class="text-4xl font-bold text-[var(--text-color)] mb-4">
+            {title}
+          </h1>
+          {
+            description && (
+              <p class="text-lg text-[var(--text-color-lighten)] leading-relaxed">
+                {description}
+              </p>
+            )
+          }
+        </div>
+
+        <!-- 專案詳情 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {
+            (started || ended) && (
+              <div class="bg-[var(--card-color)] rounded-lg p-4">
+                <h3 class="text-sm font-semibold text-[var(--text-color-lighten)] mb-2">
+                  {t("works.timeline")}
+                </h3>
+                <div class="space-y-1">
+                  {started && (
+                    <div class="flex items-center gap-2 text-[var(--text-color)]">
+                      <span class="text-sm">{t("works.started")}：</span>
+                      <FormattedDate date={started} />
+                    </div>
+                  )}
+                  {ended && (
+                    <div class="flex items-center gap-2 text-[var(--text-color)]">
+                      <span class="text-sm">{t("works.ended")}：</span>
+                      <FormattedDate date={ended} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          }
+
+          {
+            tags && tags.length > 0 && (
+              <div class="bg-[var(--card-color)] rounded-lg p-4">
+                <h3 class="text-sm font-semibold text-[var(--text-color-lighten)] mb-2">
+                  {t("works.techTags")}
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <span class="px-3 py-1 text-sm bg-[var(--primary-color-transparent)] text-[var(--primary-color)] rounded-full">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 作品內容 -->
+  <section>
+    <!-- <Fragment set:html={tocHTMLString} /> -->
+    <div class="article-wrapper">
+      <div class="article">
+        <Markdown>
+          <Content />
+        </Markdown>
+      </div>
+    </div>
+  </section>
+</Main>
+
+<style>
+  @reference "../../../styles/global.css";
+  .article-wrapper {
+    @apply mx-3 rounded-2xl bg-[var(--card-color)] px-5 py-6 lg:mx-0 lg:px-10 lg:py-9;
+  }
+  .article {
+    @apply flex flex-col;
+    font-size: var(--primary-font);
+  }
+</style>

@@ -1,0 +1,18 @@
+---
+import BaseHead from "@/components/BaseHead.astro";
+import Config from "website.config";
+---
+
+<!doctype html>
+<html lang="zh-tw">
+  <head>
+    <BaseHead title={Config.title} description={Config.description} />
+    <meta http-equiv="refresh" content="0;url=/zh-tw/" />
+  </head>
+  <body>
+    <p>
+      如果您的瀏覽器沒有自動跳轉，請點擊
+      <a href="/zh-tw/">這裡</a>。
+    </p>
+  </body>
+</html>

@@ -1,0 +1,267 @@
+---
+export interface Props {
+  title: string;
+  subtitle: string;
+  date: string;
+  isLast?: boolean;
+  index?: number;
+}
+
+const { title, subtitle, date, isLast = false, index = 0 } = Astro.props;
+---
+
+<style>
+  .timeline-container {
+    position: relative;
+    display: flex;
+    gap: 1.5rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.5s ease,
+      transform 0.5s ease;
+  }
+
+  .timeline-container.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .timeline-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .timeline-dot {
+    display: flex;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid var(--primary-color);
+    background: hsl(var(--background-color));
+    position: relative;
+    z-index: 10;
+    transform: scale(0);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .timeline-dot.animate-in {
+    transform: scale(1);
+  }
+
+  .dark .timeline-dot {
+    background: hsl(var(--muted));
+  }
+
+  .timeline-line {
+    width: 1px;
+    flex-grow: 1;
+    background: linear-gradient(
+      to bottom,
+      var(--primary-color),
+      var(--primary-color-lighten)
+    );
+    height: 0;
+    transition: height 0.8s ease;
+  }
+
+  .timeline-line.animate-in {
+    height: 100%;
+  }
+
+  .timeline-content {
+    padding-bottom: 2rem;
+    flex: 1;
+  }
+
+  .timeline-content.is-last {
+    padding-bottom: 0;
+  }
+
+  .timeline-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition:
+      opacity 0.5s ease,
+      transform 0.5s ease;
+    margin-bottom: 0.5rem;
+  }
+
+  .timeline-header.animate-in {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .timeline-title {
+    font-weight: 500;
+    color: var(--text-color);
+  }
+
+  .timeline-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-color-lighten);
+  }
+
+  .timeline-date {
+    font-size: 0.75rem;
+    color: var(--text-color-lighten);
+  }
+
+  .timeline-children {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .timeline-children.animate-in {
+    opacity: 1;
+  }
+
+  /* 響應式設計 */
+  @media (max-width: 768px) {
+    .timeline-container {
+      gap: 1rem;
+    }
+
+    .timeline-content {
+      padding-bottom: 1.5rem;
+    }
+
+    .timeline-title {
+      font-size: 0.9rem;
+    }
+
+    .timeline-subtitle {
+      font-size: 0.8rem;
+    }
+
+    .timeline-date {
+      font-size: 0.7rem;
+    }
+  }
+</style>
+
+<div class="timeline-container" data-timeline-item data-index={index}>
+  <div class="timeline-side">
+    <div class="timeline-dot" data-timeline-dot data-index={index}></div>
+    {
+      !isLast && (
+        <div class="timeline-line" data-timeline-line data-index={index} />
+      )
+    }
+  </div>
+
+  <div class={`timeline-content ${isLast ? "is-last" : ""}`}>
+    <div class="timeline-header" data-timeline-header data-index={index}>
+      <h3 class="timeline-title">{title}</h3>
+      <!-- 國家的部分因為目前都一樣先暫時隱藏 -->
+      <!-- <p class="timeline-subtitle">{subtitle}</p> -->
+      <p class="timeline-date">{date}</p>
+    </div>
+
+    <div class="timeline-children" data-timeline-children data-index={index}>
+      <slot />
+    </div>
+  </div>
+</div>
+
+<script>
+  class TimelineItemController {
+    private observer: IntersectionObserver;
+
+    constructor() {
+      this.observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              this.animateItem(entry.target as HTMLElement);
+            }
+          });
+        },
+        {
+          threshold: 0.1,
+          rootMargin: "-50px 0px",
+        }
+      );
+
+      this.init();
+    }
+
+    private init() {
+      // 初始化所有時間軸 item
+      document.querySelectorAll("[data-timeline-item]").forEach((item) => {
+        this.observer.observe(item);
+      });
+    }
+
+    private animateItem(container: HTMLElement) {
+      const index = parseInt(container.dataset.index || "0");
+      const baseDelay = index * 200;
+
+      // 容器動畫
+      setTimeout(() => {
+        container.classList.add("animate-in");
+      }, baseDelay);
+
+      // 點動畫
+      const dot = container.querySelector("[data-timeline-dot]") as HTMLElement;
+      if (dot) {
+        setTimeout(() => {
+          dot.classList.add("animate-in");
+        }, baseDelay + 200);
+      }
+
+      // 標題動畫
+      const header = container.querySelector(
+        "[data-timeline-header]"
+      ) as HTMLElement;
+      if (header) {
+        setTimeout(() => {
+          header.classList.add("animate-in");
+        }, baseDelay + 100);
+      }
+
+      // 線條動畫
+      const line = container.querySelector(
+        "[data-timeline-line]"
+      ) as HTMLElement;
+      if (line) {
+        setTimeout(() => {
+          line.classList.add("animate-in");
+        }, baseDelay + 300);
+      }
+
+      // 子內容動畫
+      const children = container.querySelector(
+        "[data-timeline-children]"
+      ) as HTMLElement;
+      if (children) {
+        setTimeout(() => {
+          children.classList.add("animate-in");
+        }, baseDelay + 400);
+      }
+
+      // 停止觀察此元素
+      this.observer.unobserve(container);
+    }
+
+    public destroy() {
+      this.observer.disconnect();
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    new TimelineItemController();
+  });
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      new TimelineItemController();
+    });
+  } else {
+    new TimelineItemController();
+  }
+</script>

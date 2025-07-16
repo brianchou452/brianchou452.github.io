@@ -1,0 +1,68 @@
+[
+  {
+    "position": "Backend Intern",
+    "company": "Shopee Taiwan",
+    "location": "Taiwan",
+    "period": "2024/10 - 2025/06",
+    "achievements": [
+      "Optimized web crawlers to reduce blocking rates and improve efficiency. Redesigned architecture for better performance and readability.",
+      "Refactored payment tools, cutting code size by up to 50% for easier maintenance.",
+      "Integrated GitLab CI/CD and unit tests to enhance system stability."
+    ]
+  },
+  {
+    "position": "Teaching Assistant, Introduction to Computers",
+    "company": "University of Taipei",
+    "location": "Taiwan",
+    "period": "2024/10 - 2025/06"
+  },
+  {
+    "position": "Backend Intern",
+    "company": "TSMC (Taiwan Semiconductor Manufacturing Company Limited)",
+    "location": "Taiwan",
+    "period": "2024/07 - 2024/08",
+    "achievements": [
+      "Enhanced a Java Spring Boot system by integrating error notifications and push alerts, improving code quality."
+    ]
+  },
+  {
+    "position": "iOS APP Intern",
+    "company": "PChome 24h",
+    "location": "Taiwan",
+    "period": "2023/07 - 2023/08",
+    "achievements": [
+      "Redeveloped the PChome 24h app using Swift, UlKit, SnapKit, and MVVM.",
+      "Developed and successfully launched pages for \"Announcement\", \"Frequently Asked Questions\", \"Contact Us\" and \"About Us\"."
+    ]
+  },
+  {
+    "position": "Development & Maintenance of Student Leave System",
+    "company": "University of Taipei",
+    "location": "Taiwan",
+    "period": "2022/09 - 2025/02",
+    "achievements": [
+      "Participated in the university's administrative system collaboration project initiated by the Computer Networks Center.",
+      "Developed backend APIs with FastAPI and automated workflows with GitHub Actions.",
+      "Maintained the production environment and mentored junior team members."
+    ]
+  },
+  {
+    "position": "Freelance",
+    "company": "Freelance",
+    "location": "Taiwan",
+    "period": "2022/07 - 2022/08",
+    "achievements": [
+      "Android App feature development and backend image data receiving API implementation"
+    ]
+  },
+  {
+    "position": "Instructor for the Software Research Club",
+    "company": "National CHU PEI Senior High School",
+    "location": "Taiwan",
+    "period": "2022/02 - 2022/06",
+    "achievements": [
+      "Instructed junior students in C/C++ programming and provided assignment exercises.",
+      "Led junior students to develop a meal ordering system using Vue and Firebase."
+    ]
+  }
+]
