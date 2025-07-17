@@ -2,34 +2,26 @@
 declare global {
   interface Window {
     swup?: any;
+    dataLayer?: any[];
   }
 }
 ---
 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L2Z37P1555"
+></script>
 <script>
-  // import lozad from "lozad";
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+
+  gtag("config", "G-L2Z37P1555");
+</script>
+
+<script>
   import { OverlayScrollbars } from "overlayscrollbars";
-
-  // setup post url
-  // const setupUrlAnchor = () => {
-  //   const url = window.location.href;
-  //   const urlElement = document.getElementById("post-url") as HTMLAnchorElement;
-  //   if (urlElement) {
-  //     urlElement.href = url;
-  //     urlElement.innerText = url;
-  //   }
-  // };
-
-  // setup lazy load for images
-  // const setupLozad = () => {
-  //   const observer = lozad(".lozad", {
-  //     loaded: (el) => {
-  //       el.classList.add("loaded");
-  //     },
-  //   });
-
-  //   observer.observe();
-  // };
 
   // add global scroll bar
   const setupScrollBar = () => {
@@ -59,8 +51,6 @@ declare global {
 
   // init
   const setup = () => {
-    // setupUrlAnchor();
-    // setupLozad();
     setupScrollBar();
   };
 
@@ -70,6 +60,15 @@ declare global {
   } else {
     document.addEventListener("swup:enable", () => {
       window.swup.hooks.on("content:replace", setup);
+    });
+    document.addEventListener("page:view", () => {
+      if (window.dataLayer) {
+        window.dataLayer.push({
+          event: "VirtualPageview",
+          virtualPageURL: window.location.pathname + window.location.search,
+          virtualPageTitle: document.title,
+        });
+      }
     });
   }
 </script>
