@@ -27,7 +27,7 @@ const processHref = (href: string) => {
 };
 ---
 
-<nav class="nav" id="nav">
+<nav class="nav" id="nav" role="navigation" aria-label={t("nav.aria.nav")}>
   <div
     class="relative flex h-[4rem] w-full items-center justify-between overflow-visible lg:h-[4.5rem]"
   >
@@ -36,27 +36,38 @@ const processHref = (href: string) => {
         id="menu-switcher"
         type="button"
         class="h-[40px] w-[44px] content-center"
+        aria-expanded="false"
+        aria-controls="mobile-menu-nav"
+        aria-label={t("nav.aria.openMenu")}
+        data-label-open={t("nav.aria.openMenu")}
+        data-label-close={t("nav.aria.closeMenu")}
       >
         <Icon
           id="menu-icon-closed"
           size={24}
           name="line-md:close-to-menu-transition"
           class="mx-auto hidden"
+          aria-hidden="true"
         />
         <Icon
           id="menu-icon-opened"
           size={24}
           name="line-md:menu-to-close-transition"
           class="mx-auto hidden"
+          aria-hidden="true"
         />
       </button>
-      <a class="title" href={`/${lang}/`}>
+      <a class="title" href={`/${lang}/`} aria-label={t("nav.aria.brand.home")}>
         {Config.brandTitle}
       </a>
     </div>
-    <a class="brand-lg" href={`/${lang}/`}>
+    <a
+      class="brand-lg"
+      href={`/${lang}/`}
+      aria-label={t("nav.aria.brand.home")}
+    >
       <div class="title space-x-2">
-        <Icon name="heroicons:home" size={32} />
+        <Icon name="heroicons:home" size={32} aria-hidden="true" />
         <p>{Config.brandTitle}</p>
       </div>
     </a>
@@ -67,6 +78,17 @@ const processHref = (href: string) => {
             href={processHref(nav.href)}
             target={isExternalLink(nav.href) ? "_blank" : undefined}
             rel={isExternalLink(nav.href) ? "noopener noreferrer" : undefined}
+            aria-label={
+              isExternalLink(nav.href)
+                ? `${t(nav.nameKey)} ${t("nav.link.opensInNewTab")}`
+                : t(nav.nameKey)
+            }
+            aria-current={
+              !isExternalLink(nav.href) &&
+              Astro.url.pathname.startsWith(processHref(nav.href))
+                ? "page"
+                : undefined
+            }
           >
             <p>{t(nav.nameKey)}</p>
           </a>
@@ -81,18 +103,27 @@ const processHref = (href: string) => {
         <SearchBar client:only="svelte" />
       </div>
       <div class="theme">
-        <button type="button" id="theme-switcher">
+        <button
+          type="button"
+          id="theme-switcher"
+          aria-label={t("nav.aria.theme")}
+          aria-pressed="false"
+          data-label-dark={t("nav.aria.switchToDark")}
+          data-label-light={t("nav.aria.switchToLight")}
+        >
           <Icon
             id="theme-icon-light"
             name="line-md:moon-alt-to-sunny-outline-loop-transition"
             size={24}
             class="hidden"
+            aria-hidden="true"
           />
           <Icon
             id="theme-icon-dark"
             name="line-md:sunny-outline-to-moon-alt-loop-transition"
             size={24}
             class="hidden"
+            aria-hidden="true"
           />
         </button>
       </div>
@@ -102,6 +133,8 @@ const processHref = (href: string) => {
     <ul
       id="mobile-menu-nav"
       class="mobile-menu-nav mobile-menu-nav-closed flex flex-col space-y-6 overflow-hidden text-xl font-medium text-[var(--text-color)] transition-all duration-300"
+      aria-label={t("nav.aria.mobileMenu")}
+      aria-hidden="true"
     >
       {
         Config.navigators.map((nav) => (
@@ -111,6 +144,17 @@ const processHref = (href: string) => {
               class="mobile-nav-item"
               target={isExternalLink(nav.href) ? "_blank" : undefined}
               rel={isExternalLink(nav.href) ? "noopener noreferrer" : undefined}
+              aria-label={
+                isExternalLink(nav.href)
+                  ? `${t(nav.nameKey)} ${t("nav.link.opensInNewTab")}`
+                  : t(nav.nameKey)
+              }
+              aria-current={
+                !isExternalLink(nav.href) &&
+                Astro.url.pathname.startsWith(processHref(nav.href))
+                  ? "page"
+                  : undefined
+              }
             >
               <div class="flex flex-row items-center space-x-2">
                 <span class="text-[var(--primary-color)]">·</span>
@@ -119,6 +163,7 @@ const processHref = (href: string) => {
               <Icon
                 name="cuida:caret-right-outline"
                 class="text-[var(--text-color-lighten)]"
+                aria-hidden="true"
               />
             </a>
           </li>
@@ -272,11 +317,32 @@ const processHref = (href: string) => {
         "mobile-menu-nav-opened",
         "mobile-menu-nav-closed"
       );
+      // a11y states
+      menuSwitcher.setAttribute("aria-expanded", "false");
+      menuSwitcher.setAttribute(
+        "aria-label",
+        menuSwitcher.dataset.labelOpen || ""
+      );
+      mobileMenuNav.setAttribute("aria-hidden", "true");
+      // return focus to the toggle button
+      menuSwitcher.focus();
     } else {
       mobileMenuNav.classList.replace(
         "mobile-menu-nav-closed",
         "mobile-menu-nav-opened"
       );
+      // a11y states
+      menuSwitcher.setAttribute("aria-expanded", "true");
+      menuSwitcher.setAttribute(
+        "aria-label",
+        menuSwitcher.dataset.labelClose || ""
+      );
+      mobileMenuNav.setAttribute("aria-hidden", "false");
+      // move focus to first item in menu for accessibility
+      const firstItem = mobileMenuNav.querySelector(
+        ".mobile-nav-item"
+      ) as HTMLAnchorElement | null;
+      firstItem?.focus();
     }
     isMenuOpen = !isMenuOpen;
   };
@@ -328,6 +394,17 @@ const processHref = (href: string) => {
 
     // Toggle dark class
     document.documentElement.classList.toggle("dark", theme === "dark");
+
+    // a11y: update pressed state and label to indicate the action
+    themeSwitcher.setAttribute(
+      "aria-pressed",
+      theme === "dark" ? "true" : "false"
+    );
+    const actionLabel =
+      theme === "dark"
+        ? themeSwitcher.dataset.labelLight
+        : themeSwitcher.dataset.labelDark;
+    if (actionLabel) themeSwitcher.setAttribute("aria-label", actionLabel);
   };
 
   // Click to switch theme
@@ -339,6 +416,13 @@ const processHref = (href: string) => {
   document.addEventListener("DOMContentLoaded", () => {
     setTheme(currentTheme);
     menuIconClosed.style.display = "block";
+    // ensure initial states
+    menuSwitcher.setAttribute("aria-expanded", "false");
+    mobileMenuNav.setAttribute("aria-hidden", "true");
+    menuSwitcher.setAttribute(
+      "aria-label",
+      menuSwitcher.dataset.labelOpen || ""
+    );
   });
 
   // fold nav bar when scroll down
@@ -353,6 +437,14 @@ const processHref = (href: string) => {
       navBarElement!.style.top = "0";
     }
     lastYPos = window.scrollY;
+  });
+
+  // Keyboard a11y: ESC to close the mobile menu when open
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && isMenuOpen) {
+      switchMenuState();
+      menuSwitcher.focus();
+    }
   });
 </script>
 
