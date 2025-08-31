@@ -69,7 +69,10 @@ if (props.image && !images[props.image])
             {props.category && (
               <div class="flex flex-row items-center space-x-2 rounded-md bg-black/50 px-1.5 py-0.5 text-[var(--primary-color-lighten)] dark:text-[var(--text-color)]">
                 <Icon name="dashicons:category" />
-                <span class="max-w-28 select-none truncate">
+                <span
+                  class="max-w-28 select-none truncate"
+                  data-pagefind-filter="category"
+                >
                   {props.category}
                 </span>
               </div>
@@ -111,6 +114,7 @@ if (props.image && !images[props.image])
                 <a
                   class="select-none rounded-md px-1.5 py-0.5 text-[var(--text-color-lighten)] transition-all hover:bg-[var(--primary-color-lighten)] hover:text-[var(--primary-color)]"
                   href={`/${lang}/categories/${IdToSlug(props.category)}`}
+                  data-pagefind-filter="category"
                 >
                   {props.category}
                 </a>
@@ -131,6 +135,7 @@ if (props.image && !images[props.image])
                         <a
                           class="rounded-md px-1.5 py-0.5 transition-all hover:bg-[var(--primary-color-lighten)] hover:text-[var(--primary-color)]"
                           href={`/${lang}/tags/${IdToSlug(tag)}`}
+                          data-pagefind-filter="tags"
                         >
                           {tag}
                         </a>
