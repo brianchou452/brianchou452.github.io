@@ -4,16 +4,31 @@ import { Icon } from "astro-icon/components";
 export interface Props {
   name: string;
   link: string;
+  /** Optional human-friendly label for screen readers */
+  label?: string;
 }
-const { name, link } = Astro.props;
+const { name, link, label } = Astro.props;
+const ariaLabel = label ?? name;
 ---
 
-<a href={link} target="_blank" rel="noopener noreferrer">
+<a
+  href={link}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label={ariaLabel}
+  title={ariaLabel}
+>
   <div
     class="flex h-10 w-10 flex-col justify-center rounded-lg transition-all hover:brightness-75 dark:hover:brightness-125"
   >
     <div class="flex flex-row justify-center">
-      <Icon name={name} size={24} class="text-[var(--primary-color)]" />
+      <Icon
+        name={name}
+        size={24}
+        class="text-[var(--primary-color)]"
+        aria-hidden="true"
+        focusable="false"
+      />
     </div>
   </div>
 </a>

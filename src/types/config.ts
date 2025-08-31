@@ -16,7 +16,7 @@ interface Configuration {
   username: string;
   sign: string;
 
-  socialLinks: { icon: string; link: string }[];
+  socialLinks: { icon: string; link: string; ariaLabel: string }[];
 
   maxSidebarCategoryChip: number;
   maxSidebarTagChip: number;

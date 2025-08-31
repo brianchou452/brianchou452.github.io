@@ -36,15 +36,8 @@ const Config: Configuration = {
     {
       icon: "line-md:github-loop",
       link: "https://github.com/brianchou452",
+      ariaLabel: "GitHub",
     },
-    // {
-    //   icon: "mingcute:bilibili-line",
-    //   link: "https://space.bilibili.com/22433608",
-    // },
-    // {
-    //   icon: "mingcute:netease-music-line",
-    //   link: "https://music.163.com/#/user/home?id=125291648",
-    // },
   ],
   maxSidebarCategoryChip: 6, // It is recommended to set it to a common multiple of 2 and 3
   maxSidebarTagChip: 12,

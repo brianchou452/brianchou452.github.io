@@ -67,7 +67,13 @@ export default defineConfig({
       [
         rehypeAutolinkHeadings,
         {
+          // Use a small anchor before the heading text to retain original styles.
+          // Provide an aria-label so the icon-only link has an accessible name.
           behavior: "prepend",
+          properties: {
+            className: ["heading-anchor"],
+            "aria-label": "連結到本段落",
+          },
         },
       ],
     ],

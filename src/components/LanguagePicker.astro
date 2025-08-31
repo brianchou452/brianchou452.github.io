@@ -11,8 +11,10 @@ const currentLang = getLangFromUrl(Astro.url);
     <button
       class="dropdown-button"
       id="language-button"
-      aria-haspopup="true"
+      aria-haspopup="menu"
       aria-expanded="false"
+      aria-controls="language-menu"
+      aria-label={`Select language, current ${languages[currentLang]}`}
     >
       <span class="current-language">{languages[currentLang]}</span>
       <svg
@@ -21,6 +23,7 @@ const currentLang = getLangFromUrl(Astro.url);
         height="12"
         viewBox="0 0 12 12"
         fill="none"
+        aria-hidden="true"
       >
         <path
           d="M3 4.5L6 7.5L9 4.5"
@@ -30,13 +33,21 @@ const currentLang = getLangFromUrl(Astro.url);
           stroke-linejoin="round"></path>
       </svg>
     </button>
-    <div class="dropdown-menu" id="language-menu">
+    <div
+      class="dropdown-menu"
+      id="language-menu"
+      role="menu"
+      aria-labelledby="language-button"
+    >
       {
         Object.entries(languages).map(([lang, label]) => (
           <a
             href={`/${lang}/`}
             class={`dropdown-item ${lang === currentLang ? "active" : ""}`}
             data-lang={lang}
+            role="menuitem"
+            aria-label={label}
+            aria-current={lang === currentLang ? "true" : undefined}
           >
             {label}
           </a>

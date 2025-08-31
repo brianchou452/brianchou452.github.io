@@ -23,12 +23,7 @@ const tagKeys = [...tags.keys()];
   <!-- Owner info card -->
   <div class="rounded-3xl bg-[var(--card-color)] transition-all lg:hidden">
     <div class="flex flex-row md:flex-col md:pt-4">
-      <a href="/" class="relative h-40 w-40 md:hidden">
-        <!-- <img
-          class="lozad absolute left-0 top-0 h-40 rounded-l-3xl"
-          data-src={Config.avatarUrl}
-          alt="Avatar"
-        /> -->
+  <a href="/" aria-label={`${Config.username} Home`} class="relative h-40 w-40 md:hidden">
         <Image 
         class:list={["absolute", "left-0", "top-0", "h-40", "rounded-l-3xl"]}
         src={AvatarImage} alt="Avatar" />
@@ -38,6 +33,8 @@ const tagKeys = [...tags.keys()];
         </div>
       </a>
       <a
+        href="/"
+        aria-label={`${Config.username} Home`}
         class="mx-auto hidden h-40 w-40 cursor-pointer rounded-3xl transition-all hover:brightness-75 md:block"
       >
         <!-- <img
@@ -67,8 +64,8 @@ const tagKeys = [...tags.keys()];
           {
             Config.socialLinks.map((item) => (
               <li>
-                <a href={item.link} class="text-[var(--primary-color)]">
-                  <Icon name={item.icon} size={24} />
+                <a href={item.link} aria-label={item.ariaLabel || 'Social link'} class="text-[var(--primary-color)]">
+                  <Icon name={item.icon} size={24} aria-hidden="true" focusable="false" />
                 </a>
               </li>
             ))
@@ -131,7 +128,7 @@ const tagKeys = [...tags.keys()];
               class="flex flex-row items-center space-x-1 text-[var(--primary-color)] transition-colors hover:brightness-75 dark:hover:brightness-125"
             >
             <span>{t("sidebar.view_more")}</span>
-                <Icon name="mingcute:arrow-right-line" />
+                <Icon name="mingcute:arrow-right-line" aria-hidden="true" focusable="false" />
             </a>
           </div>
         )
@@ -168,7 +165,7 @@ const tagKeys = [...tags.keys()];
               class="flex flex-row items-center space-x-1 text-[var(--primary-color)] transition-colors hover:brightness-75 dark:hover:brightness-125"
             >
               <span>{t("sidebar.view_more")}</span>
-              <Icon name="mingcute:arrow-right-line" />
+              <Icon name="mingcute:arrow-right-line" aria-hidden="true" focusable="false" />
             </a>
           </div>
         )
