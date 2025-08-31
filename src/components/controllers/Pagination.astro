@@ -9,6 +9,9 @@ export interface Props {
 }
 
 const props = Astro.props;
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 
 const maxVisiblePages = 4;
 let pages: (string | number)[] = [];
@@ -38,12 +41,25 @@ if (props.lastPage <= maxVisiblePages) {
   style={props.style}
   class:list={["flex flex-row justify-center space-x-4", props.class]}
 >
-  <a
-    href={props.prevURL}
-    class:list={[props.prevURL ? "button" : "button-disabled"]}
-  >
-    <span>＜</span>
-  </a>
+  {
+    props.prevURL ? (
+      <a
+        href={props.prevURL}
+        class:list={["button"]}
+        aria-label={t("pagination.previous")}
+      >
+        <span>＜</span>
+      </a>
+    ) : (
+      <span
+        class="button-disabled"
+        aria-disabled="true"
+        aria-label={t("pagination.previous")}
+      >
+        <span>＜</span>
+      </span>
+    )
+  }
 
   <div class="flex flex-row space-x-2">
     {
@@ -62,12 +78,25 @@ if (props.lastPage <= maxVisiblePages) {
     }
   </div>
 
-  <a
-    href={props.nextURL}
-    class:list={[props.nextURL ? "button" : "button-disabled"]}
-  >
-    <span>＞</span>
-  </a>
+  {
+    props.nextURL ? (
+      <a
+        href={props.nextURL}
+        class:list={["button"]}
+        aria-label={t("pagination.next")}
+      >
+        <span>＞</span>
+      </a>
+    ) : (
+      <span
+        class="button-disabled"
+        aria-disabled="true"
+        aria-label={t("pagination.next")}
+      >
+        <span>＞</span>
+      </span>
+    )
+  }
 </div>
 <style>
   @reference "../../styles/global.css";

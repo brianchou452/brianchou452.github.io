@@ -48,7 +48,8 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
                 <Image
                   src={images[work.cover]()}
                   alt={work.title}
-                  loading={"lazy"}
+                  loading="eager"
+                  fetchpriority="high"
                   class="work-image"
                 />
               ) : (
@@ -79,7 +80,8 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
                 <Image
                   src={images[work.cover]()}
                   alt={work.title}
-                  loading={"lazy"}
+                  loading="eager"
+                  fetchpriority="high"
                   class="work-image"
                 />
               ) : (

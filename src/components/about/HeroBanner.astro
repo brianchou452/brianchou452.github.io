@@ -6,7 +6,13 @@ import BannerImage from "@/assets/banner.svg";
 <section id="關於我" class="hero-banner">
   <div class="image-section">
     <div class="banner-image-container">
-      <Image src={BannerImage} alt="Banner Picture" class="banner-image" />
+      <Image
+        src={BannerImage}
+        alt="Banner"
+        class="banner-image"
+        loading="eager"
+        fetchpriority="high"
+      />
       <div class="overlay"></div>
     </div>
   </div>
