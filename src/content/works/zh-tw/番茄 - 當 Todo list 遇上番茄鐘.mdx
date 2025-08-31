@@ -1,0 +1,88 @@
+---
+title: 番茄 - 當 Todo list 遇上番茄鐘
+started: 2024-04-21
+ended: 2024-06-17
+description: 這是一款 Android 應用程式，將番茄鐘和Todo list 結合，並配有簡單的統計功能。一起更專注、更高效的完成事情吧！
+cover: /src/assets/works/番茄-當_Todo_list_遇上番茄鐘/banner.png
+sourceLink: https://github.com/brianchou452/Tomatoes
+demoLink: https://github.com/brianchou452/Tomatoes/releases
+tags: [Kotlin, Firebase, Jetpack Compose]
+---
+import { Image } from "astro:assets";
+import img10 from "../../../assets/works/番茄-當_Todo_list_遇上番茄鐘/image10.png";
+import img11 from "../../../assets/works/番茄-當_Todo_list_遇上番茄鐘/image11.png";
+import img4 from "../../../assets/works/番茄-當_Todo_list_遇上番茄鐘/image4.png";
+import img5 from "../../../assets/works/番茄-當_Todo_list_遇上番茄鐘/image5.png";
+import img6 from "../../../assets/works/番茄-當_Todo_list_遇上番茄鐘/image6.png";
+import img7 from "../../../assets/works/番茄-當_Todo_list_遇上番茄鐘/image7.png";
+import img8 from "../../../assets/works/番茄-當_Todo_list_遇上番茄鐘/image8.jpeg";
+import img9 from "../../../assets/works/番茄-當_Todo_list_遇上番茄鐘/image9.png";
+
+## 專案亮點
+
+- 使用 Jetpack Compose 進行開發
+- 支援 Google 帳號登入與訪客帳號登入
+- 支援跨裝置同步 Todo List
+- 可以使用歷程功能查看每天完成的事項
+- 每個 Todo item 可以設定需要幾個蕃茄的時間完成，App 會自動根據蕃茄鐘的規則執行計時器，每專注25分鐘休息5分鐘
+- 使用 Material 3 設計，支援動態色彩
+
+## 功能說明
+
+### 登⼊⾴⾯
+
+應用程式登入畫面，可以使用 Google 帳號登入或是點擊「使用訪客身份登入」創建一個臨時帳戶並於登出時刪除。
+
+<p align="center">
+  <Image src={img4} alt="登入畫面" style="max-height:500px;max-width:100%;width:auto;height:auto;display:block;margin:0 auto;" />
+</p>
+
+### 待辦事項⾴⾯
+
+這裡會列出所有待辦事項，點擊「新增」可以新增一筆新的待辦事項。點擊列表內的待辦事項可以開啟番茄鐘計時畫面。
+
+<p align="center">
+  <Image src={img5} alt="待辦事項畫面" style="max-height:500px;max-width:100%;width:auto;height:auto;display:block;margin:0 auto;" />
+</p>
+
+點擊「新增」後可以開起 Bottom Sheet 讓使用者填入要完成的事情，並預估大約需要幾個番茄鐘（番茄鐘一次為 25 分鐘）
+
+<p align="center">
+  <Image src={img6} alt="新增待辦事項畫面" style="max-height:500px;max-width:100%;width:auto;height:auto;display:block;margin:0 auto;" />
+</p>
+
+### 番茄鐘計時⾴⾯
+
+這裡會列出所有待辦事項，點擊「新增」可以新增一筆新的待辦事項。點擊列表內的待辦事項可以開啟番茄鐘計時畫面。
+
+<p align="center">
+  <Image src={img7} alt="番茄鐘計時畫面" style="max-height:500px;max-width:100%;width:auto;height:auto;display:block;margin:0 auto;" />
+</p>
+
+時間到會顯示通知並提示，並自動記錄計時次數決定長休息或是短休息。
+
+<p align="center">
+  <Image src={img8} alt="番茄鐘計時結束畫面" style="max-height:500px;max-width:100%;width:auto;height:auto;display:block;margin:0 auto;" />
+</p>
+
+### 歷程⾴⾯
+
+這裡會列出所選日期所完成的番茄鐘事項。如果該日有完成番茄鐘，日期的數字下方就會出現一個點點標記（一個日期最多只會有三個點點）
+
+<p align="center">
+  <Image src={img9} alt="番茄鐘計時畫面" style="max-height:500px;max-width:100%;width:auto;height:auto;display:block;margin:0 auto;" />
+</p>
+
+### 成就⾴⾯
+
+這裡會列出關於待辦事項的一些統計資料。不過功能尚未完成，因此數值為虛構。
+
+<p align="center">
+  <Image src={img10} alt="番茄鐘計時畫面" style="max-height:500px;max-width:100%;width:auto;height:auto;display:block;margin:0 auto;" />
+</p>
+
+點擊更多圖示按鈕可以叫出選單，目前只有登出功能可以運作。
+
+<p align="center">
+  <Image src={img11} alt="番茄鐘計時畫面" style="max-height:500px;max-width:100%;width:auto;height:auto;display:block;margin:0 auto;" />
+</p>
