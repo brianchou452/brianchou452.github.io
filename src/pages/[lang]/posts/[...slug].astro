@@ -51,6 +51,9 @@ export async function getStaticPaths() {
 }
 const { entry, isFallback } = Astro.props;
 const { Content } = await render(entry);
+
+const [entryLang, ...entrySlugParts] = entry.id.split("/");
+const originalSlug = entrySlugParts.join("/");
 ---
 
 {
@@ -60,6 +63,8 @@ const { Content } = await render(entry);
       subTitle={entry.data.description}
       bannerImage={entry.data.cover}
       published={entry.data.published}
+      aiTranslated={entry.data.aiTranslated}
+      originalSlug={originalSlug}
     >
       <div
         class="hidden"
@@ -85,6 +90,8 @@ const { Content } = await render(entry);
       license={{ name: entry.data.licenseName, url: entry.data.licenseUrl }}
       author={entry.data.author}
       sourceLink={entry.data.sourceLink}
+      aiTranslated={entry.data.aiTranslated}
+      originalSlug={originalSlug}
     >
       <div
         class="hidden"

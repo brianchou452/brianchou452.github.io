@@ -17,6 +17,7 @@ const blog = defineCollection({
 		sourceLink: z.string().optional(),
 		licenseName: z.string().optional(),
 		licenseUrl: z.string().optional(),
+		aiTranslated: z.boolean().optional(),
 	}),
 });
 
@@ -31,6 +32,7 @@ const works = defineCollection({
 		sourceLink: z.string().optional(),
 		demoLink: z.string().optional(),
 		tags: z.array(z.string()).optional(),
+		aiTranslated: z.boolean().optional(),
 	}),
 });
 

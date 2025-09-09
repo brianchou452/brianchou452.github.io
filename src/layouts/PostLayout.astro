@@ -1,6 +1,7 @@
 ---
 import Markdown from "../components/Markdown.astro";
 import CopyRight from "../components/misc/CopyRight.astro";
+import AITranslationWarning from "../components/misc/AITranslationWarning.astro";
 import Main from "../layouts/MainLayout.astro";
 
 interface Props {
@@ -14,9 +15,11 @@ interface Props {
   };
   author?: string;
   sourceLink?: string;
+  aiTranslated?: boolean;
+  originalSlug?: string;
 }
 
-const { title, subTitle, bannerImage, published, license, author, sourceLink } =
+const { title, subTitle, bannerImage, published, license, author, sourceLink, aiTranslated, originalSlug } =
   Astro.props;
 ---
 
@@ -24,6 +27,11 @@ const { title, subTitle, bannerImage, published, license, author, sourceLink } =
   <!-- <Fragment set:html={tocHTMLString} /> -->
   <div class="article-wrapper">
     <div class="article">
+      {
+        aiTranslated && originalSlug && (
+          <AITranslationWarning originalSlug={originalSlug} />
+        )
+      }
       <Markdown>
         <slot />
       </Markdown>

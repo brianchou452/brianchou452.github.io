@@ -51,6 +51,8 @@ export const ui = {
         'works.started': '開始',
         'works.ended': '結束',
         'works.techTags': 'Tags',
+        'aiTranslation.warning': '本內容由 AI 翻譯，可能存在不準確之處',
+        'aiTranslation.viewOriginal': '查看原始語言版本',
     },
     "en": {
         'nav.home': 'Home',
@@ -90,5 +92,7 @@ export const ui = {
         'works.started': 'Started',
         'works.ended': 'Ended',
         'works.techTags': 'Tags',
+        'aiTranslation.warning': 'This content has been translated by AI and may contain inaccuracies',
+        'aiTranslation.viewOriginal': 'View original version',
     },
 } as const;

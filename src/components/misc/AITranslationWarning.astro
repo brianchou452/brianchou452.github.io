@@ -1,0 +1,88 @@
+---
+import { defaultLang } from "@/i18n/ui";
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+import { IdToSlug } from "@/utils/hash";
+
+interface Props {
+  originalSlug: string;
+  currentLang?: string;
+  contentType?: "posts" | "works";
+}
+
+const { originalSlug, currentLang, contentType = "posts" } = Astro.props;
+const lang = currentLang || getLangFromUrl(Astro.url);
+const t = useTranslations(lang as keyof typeof import("@/i18n/ui").ui);
+
+const displaySlug = IdToSlug(originalSlug);
+const originalUrl = `/${defaultLang}/${contentType}/${displaySlug}`;
+---
+
+<div class="ai-translation-warning">
+  <div class="warning-content">
+    <div class="warning-icon">
+      <svg
+        class="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+        ></path>
+      </svg>
+    </div>
+    <div class="warning-text">
+      <p class="warning-message">{t("aiTranslation.warning")}</p>
+      <a href={originalUrl} class="warning-link">
+        {t("aiTranslation.viewOriginal")}
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+  @reference "../../styles/global.css";
+  .ai-translation-warning {
+    @apply mb-6 rounded-lg border border-orange-200 bg-orange-50 p-4;
+  }
+
+  .warning-content {
+    @apply flex items-center space-x-3;
+  }
+
+  .warning-icon {
+    @apply flex-shrink-0 text-orange-500;
+  }
+
+  .warning-text {
+    @apply flex-1;
+  }
+
+  .warning-message {
+    @apply text-base text-orange-800 mb-2;
+  }
+
+  .warning-link {
+    @apply inline-flex items-center text-base font-medium text-orange-600 hover:text-orange-500 underline;
+  }
+
+  :global([data-theme="dark"]) .ai-translation-warning {
+    @apply border-orange-800 bg-orange-900/20;
+  }
+
+  :global([data-theme="dark"]) .warning-icon {
+    @apply text-orange-400;
+  }
+
+  :global([data-theme="dark"]) .warning-message {
+    @apply text-orange-200;
+  }
+
+  :global([data-theme="dark"]) .warning-link {
+    @apply text-orange-300 hover:text-orange-200;
+  }
+</style>

@@ -1,0 +1,482 @@
+---
+title: 2025 My First CTF & Pre-exam
+published: 2025-06-30
+description: 2025 My First CTF & Pre-exam Writeup
+tags: [AIS3, CTF, Writeup, Web, Misc, Rev]
+category: CTF Writeup
+licenseName: "Unlicensed"
+author: 海獺
+sourceLink: "https://about.seaotter.cc/en/posts/0136f4df"
+draft: false
+cover: /src/assets/blog/2025_My_First_CTF_&_Pre-exam/AIS3_logo.png
+aiTranslated: true
+---
+
+# 2025 My First CTF & Pre-exam
+
+## Web
+
+### Tomorin db
+
+In this challenge, the flag file conflicts with the `http.HandleFunc` on line 7, causing Go to prioritize handling the `http.HandleFunc`.
+So we need to find a way to make `HandleFunc` think we're not going to `/flag`. Looking at the [official documentation](https://pkg.go.dev/net/http#hdr-Compatibility-ServeMux)
+([Github Issue](https://github.com/golang/go/issues/21955)), we can find a section explaining that using `%2F` might cause issues.
+Therefore, this challenge can be solved using the URL `http://chals1.ais3.org:30000/%2F%2Fflag` to get the flag.
+
+```go
+package main
+
+import "net/http"
+
+func main() {
+ http.Handle("/", http.FileServer(http.Dir("/app/Tomorin")))
+ http.HandleFunc("/flag", func(w http.ResponseWriter, r *http.Request) {
+  http.Redirect(w, r, "https://youtu.be/lQuWN0biOBU?si=SijTXQCn9V3j4Rl6", http.StatusFound)
+   })
+   http.ListenAndServe(":30000", nil)
+}
+```
+
+### Login Screen 1
+
+From line 12 of docker-compose.yaml, we can observe:
+
+```yaml
+services:
+  cms:
+    build: ./cms
+    ports:
+      - "36368:80"
+    volumes:
+      - ./cms/html/2fa.php:/var/www/html/2fa.php:ro
+      - ./cms/html/dashboard.php:/var/www/html/dashboard.php:ro
+      - ./cms/html/index.php:/var/www/html/index.php:ro
+      - ./cms/html/init.php:/var/www/html/init.php:ro
+      - ./cms/html/logout.php:/var/www/html/logout.php:ro
+      - ./cms/html/users.db:/var/www/html/users.db:ro
+      - ./cms/html/styles.css:/var/www/html/styles.css:ro
+    environment:
+      - FLAG1=AIS3{1.This_is_the_first_test_flag}
+      - FLAG2=AIS3{2.This_is_the_second_test_flag}
+```
+
+There's a `users.db` mounted in the container. Looking at the `Dockerfile` and PHP code, it seems there's no protection against users downloading the entire DB.
+Therefore, we can directly use `http://login-screen.ctftime.uk:36368/users.db` to download the entire `users.db`.
+File-based databases are usually SQLite, so we can use an online SQLite viewer.
+![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/users-db.png)
+We can get the OTP, copy and paste it, and successfully log in.
+
+## misc
+
+### Ramen CTF
+
+This challenge starts with the receipt. First, we use the seller information (Business Uniform Number) on the receipt to find possible stores. However, since one digit is missing, we use the Ministry of Finance's
+[Tax Registration Data Public Query](https://www.etax.nat.gov.tw/etwmain/etw113w1/ban/query)
+to guess the uniform number, trying from 0~9. We can find that the correct uniform number is `34785923`.
+![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/營業人統一編號查詢.png)
+Then we paste the address into Google Maps and find
+[Leshan Hot Spring Ramen](https://maps.app.goo.gl/furHXX2vzeTrpLbQA).
+Next, we use a phone to scan the QR code on the receipt to get the following text:
+
+```txt
+MF1687991111404137095000001f4000001f40000000034785923VG9sG89nFznfPnKYFRlsoA==:**********:2:2:1:蝦拉
+```
+
+We can deduce that the item name contains `蝦拉` (shrimp la-). From the ordering machine photos on Google Maps, we can find the item `蝦拉麵` (Shrimp Ramen).
+
+![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/樂山溫泉拉麵-點餐機.png)
+
+So the flag for this challenge is `AIS3{樂山溫泉拉麵:蝦拉麵}`.
+
+### AIS3 Tiny Server - Web / Misc
+
+This challenge is just a simple file server. We can directly use URL encoding to combine `..` and `%2F` to exploit relative paths to list the root directory contents.
+Then use `http://chals1.ais3.org:20963/..%2F..%2F..%2F/readable_flag_bxPfnouGLwWm6lHiFPKpmBwEH8QGmpPB` to get the flag file.
+
+### Welcome
+
+This challenge uses CSS to cover the text below to deceive people. We can directly take a screenshot and use OCR to get the flag (or type it manually).
+After being deceived, I originally thought this was done using JS event listeners, but later discovered it was actually done with CSS - quite a clever design.
+
+![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/welcome.png)
+
+The flag is `AIS3{Welcome_And_Enjoy_The_CTF_!}`
+
+## rev
+
+### AIS3 Tiny Server - Reverse
+
+For this challenge, first put the provided binary file into Ghidra for decompilation, then directly look at the literal strings in each function. We can find
+![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/Tiny-server-Ghidra-1.png)
+the following function. Based on the clues provided by the text content, we can directly infer that the `FUN_0001120` function in line 68 `iVar2 = FUN_0001120 (pcVar6) ;` is used to check the flag. We just need to run through the program logic of `FUN_0001120` to know the flag.
+![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/Tiny-server-Ghidra-2.png)
+
+The code for FUN_00011e20 is as follows:
+
+```c
+bool FUN_00011e20(int param_1)
+
+{
+  byte bVar1;
+  int iVar2;
+  uint uVar3;
+  uint uVar4;
+  byte bVar5;
+  byte local_49 [11];
+  byte local_3e [46];
+  
+  bVar5 = 0x33;
+  local_3e[0x2c] = 0x14;
+  local_3e[0x2d] = 0;
+  bVar1 = 0x72;
+  local_3e[0] = 0x33;
+  local_3e[1] = 0x20;
+  local_3e[2] = 0x38;
+  local_3e[3] = 0x58;
+  local_3e[4] = 0x12;
+  local_3e[5] = 0x28;
+  local_3e[6] = 0x5c;
+  local_3e[7] = 0x47;
+  local_3e[8] = 0x29;
+  local_3e[9] = 0x52;
+  local_3e[10] = 0x2d;
+  local_3e[0xb] = 0xf;
+  local_3e[0xc] = 0x5a;
+  local_3e[0xd] = 10;
+  local_3e[0xe] = 0xe;
+  local_3e[0xf] = 0;
+  local_3e[0x10] = 0xf;
+  local_3e[0x11] = 0x58;
+  local_3e[0x12] = 0x13;
+  local_3e[0x13] = 0x50;
+  local_3e[0x14] = 0x19;
+  local_3e[0x15] = 0x5a;
+  local_3e[0x16] = 0x19;
+  local_3e[0x17] = 0x34;
+  local_3e[0x18] = 0x58;
+  local_3e[0x19] = 0x31;
+  local_3e[0x1a] = 0x33;
+  local_3e[0x1b] = 0x43;
+  local_3e[0x1c] = 0x13;
+  local_3e[0x1d] = 0x41;
+  local_3e[0x1e] = 4;
+  local_3e[0x1f] = 0x5a;
+  local_3e[0x20] = 0x19;
+  local_3e[0x21] = 0x34;
+  local_3e[0x22] = 0x58;
+  local_3e[0x23] = 0x2c;
+  local_3e[0x24] = 0x33;
+  local_3e[0x25] = 0x53;
+  local_3e[0x26] = 0x46;
+  local_3e[0x27] = 3;
+  local_3e[0x28] = 0x1e;
+  local_3e[0x29] = 0x48;
+  local_3e[0x2a] = 0x4a;
+  local_3e[0x2b] = 0x4a;
+  local_49[0] = 0x72;
+  local_49[1] = 0x69;
+  local_49[2] = 0x6b;
+  local_49[3] = 0x6b;
+  local_49[4] = 0x69;
+  local_49[5] = 0x5f;
+  local_49[6] = 0x6c;
+  local_49[7] = 0x30;
+  local_49[8] = 0x76;
+  local_49[9] = 0x33;
+  uVar3 = 0;
+  while( true ) {
+    local_3e[uVar3] = bVar1 ^ bVar5;
+    uVar4 = uVar3 + 1;
+    if (uVar4 == 0x2d) break;
+    bVar5 = local_3e[uVar3 + 1];
+    bVar1 = local_49[uVar4 % 10];
+    uVar3 = uVar4;
+  }
+  iVar2 = 0;
+  while ((*(byte *)(param_1 + iVar2) != 0 && (*(byte *)(param_1 + iVar2) == local_3e[iVar2]))) {
+    iVar2 = iVar2 + 1;
+    if (iVar2 == 0x2d) {
+      return *(char *)(param_1 + 0x2d) == '\0';
+    }
+  }
+  return false;
+}
+```
+
+Based on the decompilation results above, I used GPT to generate Python code with the same logic:
+
+```python
+# Initialize local_49 array
+local_49 = [0x72, 0x69, 0x6B, 0x6B, 0x69, 0x5F, 0x6C, 0x30, 0x76, 0x33]
+
+# Initialize original local_3e array
+original_local_3e = [0] * 46
+original_local_3e[0] = 0x33
+original_local_3e[1] = 0x20
+original_local_3e[2] = 0x38
+original_local_3e[3] = 0x58
+original_local_3e[4] = 0x12
+original_local_3e[5] = 0x28
+original_local_3e[6] = 0x5C
+original_local_3e[7] = 0x47
+original_local_3e[8] = 0x29
+original_local_3e[9] = 0x52
+original_local_3e[10] = 0x2D
+original_local_3e[11] = 0xF
+original_local_3e[12] = 0x5A
+original_local_3e[13] = 0x0A
+original_local_3e[14] = 0x0E
+original_local_3e[15] = 0x00
+original_local_3e[16] = 0x0F
+original_local_3e[17] = 0x58
+original_local_3e[18] = 0x13
+original_local_3e[19] = 0x50
+original_local_3e[20] = 0x19
+original_local_3e[21] = 0x5A
+original_local_3e[22] = 0x19
+original_local_3e[23] = 0x34
+original_local_3e[24] = 0x58
+original_local_3e[25] = 0x31
+original_local_3e[26] = 0x33
+original_local_3e[27] = 0x43
+original_local_3e[28] = 0x13
+original_local_3e[29] = 0x41
+original_local_3e[30] = 0x04
+original_local_3e[31] = 0x5A
+original_local_3e[32] = 0x19
+original_local_3e[33] = 0x34
+original_local_3e[34] = 0x58
+original_local_3e[35] = 0x2C
+original_local_3e[36] = 0x33
+original_local_3e[37] = 0x53
+original_local_3e[38] = 0x46
+original_local_3e[39] = 0x03
+original_local_3e[40] = 0x1E
+original_local_3e[41] = 0x48
+original_local_3e[42] = 0x4A
+original_local_3e[43] = 0x4A
+original_local_3e[44] = 0x14
+original_local_3e[45] = 0x00
+
+
+
+
+# Calculate the correct input string
+def generate_correct_input():
+
+    # Generate the correct string
+    processed_local_3e = []
+    for i in range(45):
+        key_index = (i + 1) % 10
+        key_byte = local_49[key_index]
+        original_byte = original_local_3e[i + 1]
+        processed_byte = key_byte ^ original_byte
+        processed_local_3e.append(processed_byte)
+    return bytes(processed_local_3e).decode("ascii")
+
+
+# Test
+correct_input = generate_correct_input()
+print("Correct input string:", correct_input)
+```
+
+After execution, it outputs `IS3{w0w_a_f1ag_check3r_1n_serv3r_1s_c00l!!!}_`
+Since the flag format is `AIS3{.*}`, we slightly modify it to `AIS3{w0w_a_f1ag_check3r_1n_serv3r_1s_c00l!!!}`
+, which is the flag.
+
+### web flag checker
+
+This challenge uses WASM to write the flag checking logic inside it. Initially, I tried debugging with browser developer tools, but the logic was quite complex, so I decided to use [wabt](https://github.com/WebAssembly/wabt) for decompilation.
+First, download `index.wasm` using developer tools, then use `wasm-decompile` for decompilation.
+
+```bash
+bin/wasm-decompile index.wasm -o test.dcmp
+```
+
+> While writing this writeup, I discovered that using `bin/wasm2c index.wasm -o index.c` can directly convert to equivalent C code, which is easier to understand. However, during the competition, I didn't know what I was thinking and didn't do this.
+
+Then open `test.dcmp` to see the following code (only excerpting the important parts):
+
+```c
+function f_i(a:long, b:int):long { // func8
+  var c:int = g_a;
+  var d:int = 16;
+  var e:int = c - d;
+  e[1]:long = a;
+  e[1]:int = b;
+  var f:long = e[1]:long;
+  var g:int = e[1]:int;
+  var h:int = g;
+  var i:long = i64_extend_i32_u(h);
+  var j:long = f << i;
+  var k:long = e[1]:long;
+  var l:int = e[1]:int;
+  var m:int = 64;
+  var n:int = m - l;
+  var o:int = n;
+  var p:long = i64_extend_i32_u(o);
+  var q:long = k >> p;
+  var r:long = j | q;
+  return r;
+}
+
+export function flagchecker(a:int):int { // func9
+  var b:int = g_a;
+  var c:int = 96;
+  var d:int = b - c;
+  g_a = d;
+  d[22]:int = a;
+  var e:int = -39934163;
+  d[21]:int = e;
+  var f:int = 64;
+  var g:long_ptr = d + f;
+  var h:long = 0L;
+  g[0] = h;
+  var i:int = 56;
+  var j:long_ptr = d + i;
+  j[0] = h;
+  var k:int = 48;
+  var l:long_ptr = d + k;
+  l[0] = h;
+  d[5]:long = h;
+  d[4]:long = h;
+  var m:long = 7577352992956835434L;
+  d[4]:long = m;
+  var n:long = 7148661717033493303L;
+  d[5]:long = n;
+  var o:long = -7081446828746089091L;
+  d[6]:long = o;
+  var p:long = -7479441386887439825L;
+  d[7]:long = p;
+  var q:long = 8046961146294847270L;
+  d[8]:long = q;
+  var r:int = d[22]:int;
+  var s:int = 0;
+  var t:int = r != s;
+  var u:int = 1;
+  var v:int = t & u;
+  if (eqz(v)) goto B_c;
+  var w:int = d[22]:int;
+  var x:int = f_n(w);
+  var y:int = 40;
+  var z:int = x != y;
+  var aa:int = 1;
+  var ba:int = z & aa;
+  if (eqz(ba)) goto B_b;
+  label B_c:
+  var ca:int = 0;
+  d[23]:int = ca;
+  goto B_a;
+  label B_b:
+  var da:int = d[22]:int;
+  d[7]:int = da;
+  var ea:int = 0;
+  d[6]:int = ea;
+  loop L_e {
+    var fa:int = d[6]:int;
+    var ga:int = 5;
+    var ha:int = fa < ga;
+    var ia:int = 1;
+    var ja:int = ha & ia;
+    if (eqz(ja)) goto B_d;
+    var ka:int = d[7]:int;
+    var la:int = d[6]:int;
+    var ma:int = 3;
+    var na:int = la << ma;
+    var oa:long_ptr = ka + na;
+    var pa:long = oa[0];
+    d[2]:long = pa;
+    var qa:int = d[6]:int;
+    var ra:int = 6;
+    var sa:int = qa * ra;
+    var ta:int = -39934163;
+    var ua:int = ta >> sa;
+    var va:int = 63;
+    var wa:int = ua & va;
+    d[3]:int = wa;
+    var xa:long = d[2]:long;
+    var ya:int = d[3]:int;
+    var za:long = f_i(xa, ya);
+    var ab:int = d[6]:int;
+    var bb:int = 32;
+    var cb:int = d + bb;
+    var db:int = cb;
+    var eb:int = 3;
+    var fb:int = ab << eb;
+    var gb:long_ptr = db + fb;
+    var hb:long = gb[0];
+    var ib:int = za != hb;
+    var jb:int = 1;
+    var kb:int = ib & jb;
+    if (eqz(kb)) goto B_f;
+    var lb:int = 0;
+    d[23]:int = lb;
+    goto B_a;
+    label B_f:
+    var mb:int = d[6]:int;
+    var nb:int = 1;
+    var ob:int = mb + nb;
+    d[6]:int = ob;
+    continue L_e;
+  }
+  label B_d:
+  var pb:int = 1;
+  d[23]:int = pb;
+  label B_a:
+  var qb:int = d[23]:int;
+  var rb:int = 96;
+  var sb:int = d + rb;
+  g_a = sb;
+  return qb;
+}
+```
+
+At this point, I again called upon GPT, using incantations to reverse the execution logic of this code (left rotation becomes right rotation, right rotation becomes left rotation), and convert it to Python:
+
+```python
+import struct
+
+
+def f_i_py_reverse(value_long, shift_int):
+    shift_int &= 63
+    MASK64 = 0xFFFFFFFFFFFFFFFF
+    value_long &= MASK64
+
+    right_part = (value_long >> shift_int) & MASK64
+    left_part = (value_long << (64 - shift_int)) & MASK64
+    return (left_part | right_part) & MASK64
+
+
+def find_the_flag():
+    constants_k = [
+        7577352992956835434,
+        7148661717033493303,
+        -7081446828746089091,
+        -7479441386887439825,
+        8046961146294847270,
+    ]
+    magic_int_e = -39934163
+
+    flag_parts_long = []
+    for i in range(5):
+        shift_amount = (magic_int_e >> (i * 6)) & 63
+        original_chunk = f_i_py_reverse(constants_k[i], shift_amount)
+        flag_parts_long.append(original_chunk)
+
+    flag_bytes = b""
+    for part in flag_parts_long:
+        flag_bytes += struct.pack("<q", part)  # Little-endian packing for long
+
+    try:
+        return flag_bytes.decode("utf-8")
+    except UnicodeDecodeError:
+        return f"Could not decode bytes: {flag_bytes}"
+
+
+if __name__ == "__main__":
+    print("Attempting to find the flag by reversing the logic:")
+    reversed_flag = find_the_flag()
+    print(f"Calculated Flag: {reversed_flag}")
+```
+
+After execution, we get `AIS3{W4SM_R3v3rsing_w17h_g0_4pp_39229dd}`, which is the flag for this challenge.

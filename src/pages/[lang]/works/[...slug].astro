@@ -1,6 +1,7 @@
 ---
 import FormattedDate from "@/components/FormattedDate.astro";
 import Markdown from "@/components/Markdown.astro";
+import AITranslationWarning from "@/components/misc/AITranslationWarning.astro";
 import { defaultLang, languages } from "@/i18n/ui";
 import { getLangFromUrl, useTranslations } from "@/i18n/utils";
 import Main from "@/layouts/MainLayout.astro";
@@ -282,6 +283,11 @@ const {
     <!-- <Fragment set:html={tocHTMLString} /> -->
     <div class="article-wrapper">
       <div class="article" data-pagefind-body>
+        {
+          work.data.aiTranslated && originalSlug && (
+            <AITranslationWarning originalSlug={originalSlug} contentType="works" />
+          )
+        }
         <Markdown>
           <Content />
         </Markdown>
