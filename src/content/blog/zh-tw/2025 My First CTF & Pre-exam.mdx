@@ -10,6 +10,13 @@ sourceLink: "https://about.seaotter.cc/zh-tw/posts/0136f4df"
 draft: false
 cover: /src/assets/blog/2025_My_First_CTF_&_Pre-exam/AIS3_logo.png
 ---
+import { Image } from "astro:assets";
+import usersDb from "../../../assets/blog/2025_My_First_CTF_&_Pre-exam/users-db.png";
+import businessIdQuery from "../../../assets/blog/2025_My_First_CTF_&_Pre-exam/營業人統一編號查詢.png";
+import ramenOrderMachine from "../../../assets/blog/2025_My_First_CTF_&_Pre-exam/樂山溫泉拉麵-點餐機.png";
+import welcomeImg from "../../../assets/blog/2025_My_First_CTF_&_Pre-exam/welcome.png";
+import ghidra1 from "../../../assets/blog/2025_My_First_CTF_&_Pre-exam/Tiny-server-Ghidra-1.png";
+import ghidra2 from "../../../assets/blog/2025_My_First_CTF_&_Pre-exam/Tiny-server-Ghidra-2.png";
 
 # 2025 My First CTF & Pre-exam
 
@@ -62,7 +69,7 @@ services:
 有一個 `users.db` 掛載到容器內，再看看 `Dockerfile` 以及 php 程式碼們，可以發現似乎沒有阻擋使用者下載整個 DB，
 因此我們可以直接使用 `http://login-screen.ctftime.uk:36368/users.db` 把整個 `users.db` 下載下來。
 通常檔案形式的 DB 多半是 sqlite ，因此丟到線上的 sqlite viewer ，
-![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/users-db.png)
+<Image src={usersDb} alt="SQLite 用戶資料庫查看器" />
 就可以取得OTP，直接複製貼上，就可以成功登入了。
 
 ## misc
@@ -72,7 +79,7 @@ services:
 這題用發票著手，首先先用發票上的賣方資訊（營業人統一編號）找出可能的商家，但因為缺一碼，所以我們用財政部的
 [稅籍登記資料公示查詢](https://www.etax.nat.gov.tw/etwmain/etw113w1/ban/query)
 開始猜統一編號，從0~9都試過一次，可以找到正確的統一編號是 `34785923`。
-![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/營業人統一編號查詢.png)
+<Image src={businessIdQuery} alt="營業人統一編號查詢結果" />
 接著把地址貼到 Google Map 上可以找到
 [樂山溫泉拉麵](https://maps.app.goo.gl/furHXX2vzeTrpLbQA)，
 接著用手機掃描發票上的 QRcode 可以得到以下文字
@@ -83,7 +90,7 @@ MF1687991111404137095000001f4000001f40000000034785923VG9sG89nFznfPnKYFRlsoA==:**
 
 可以推測品名包含`蝦拉`，從Google Map 的點餐機照片中可以找到`蝦拉麵`這個品項。
 
-![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/樂山溫泉拉麵-點餐機.png)
+<Image src={ramenOrderMachine} alt="樂山溫泉拉麵點餐機" />
 
 所以此題 Flag 就是 `AIS3{樂山溫泉拉麵:蝦拉麵}`。
 
@@ -97,7 +104,7 @@ MF1687991111404137095000001f4000001f40000000034785923VG9sG89nFznfPnKYFRlsoA==:**
 這題用 CSS 把底下文字覆蓋掉來騙人，直接截圖使用 OCR 就可以拿到 Flag(用打的也行拉)。
 被騙以後原本以為這是用 js 事件監聽來做的，後來發現其實用 CSS，挺巧妙的設計。
 
-![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/welcome.png)
+<Image src={welcomeImg} alt="Welcome 挑戰截圖" />
 
 Flag 是 `AIS3{Welcome_And_Enjoy_The_CTF_!}`
 
@@ -106,9 +113,9 @@ Flag 是 `AIS3{Welcome_And_Enjoy_The_CTF_!}`
 ### AIS3 Tiny Server - Reverse
 
 這題先把題目提供的二進位檔丟進 Ghidra 反編譯，接著直接先看各個 functions 內的 literal 字串，接著可以找到
-![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/Tiny-server-Ghidra-1.png)
+<Image src={ghidra1} alt="Ghidra 反組譯截圖 1" />
 以下函式，根據文字內容提供的線索，我們可以直接推斷68行 `iVar2 = FUN_0001120 (pcVar6) ;` 中的 `FUN_0001120` 函式就是用來檢查 flag 的。我們只要根據`FUN_0001120`的程式碼邏輯實際跑一遍就可以知道 flag。
-![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/Tiny-server-Ghidra-2.png)
+<Image src={ghidra2} alt="Ghidra 反組譯截圖 2" />
 
 FUN_00011e20 的程式碼如下：
 

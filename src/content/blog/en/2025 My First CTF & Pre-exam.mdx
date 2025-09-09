@@ -11,6 +11,13 @@ draft: false
 cover: /src/assets/blog/2025_My_First_CTF_&_Pre-exam/AIS3_logo.png
 aiTranslated: true
 ---
+import { Image } from "astro:assets";
+import usersDb from "../../../assets/blog/2025_My_First_CTF_&_Pre-exam/users-db.png";
+import businessIdQuery from "../../../assets/blog/2025_My_First_CTF_&_Pre-exam/營業人統一編號查詢.png";
+import ramenOrderMachine from "../../../assets/blog/2025_My_First_CTF_&_Pre-exam/樂山溫泉拉麵-點餐機.png";
+import welcomeImg from "../../../assets/blog/2025_My_First_CTF_&_Pre-exam/welcome.png";
+import ghidra1 from "../../../assets/blog/2025_My_First_CTF_&_Pre-exam/Tiny-server-Ghidra-1.png";
+import ghidra2 from "../../../assets/blog/2025_My_First_CTF_&_Pre-exam/Tiny-server-Ghidra-2.png";
 
 # 2025 My First CTF & Pre-exam
 
@@ -63,7 +70,7 @@ services:
 There's a `users.db` mounted in the container. Looking at the `Dockerfile` and PHP code, it seems there's no protection against users downloading the entire DB.
 Therefore, we can directly use `http://login-screen.ctftime.uk:36368/users.db` to download the entire `users.db`.
 File-based databases are usually SQLite, so we can use an online SQLite viewer.
-![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/users-db.png)
+<Image src={usersDb} alt="SQLite users database viewer" />
 We can get the OTP, copy and paste it, and successfully log in.
 
 ## misc
@@ -73,7 +80,7 @@ We can get the OTP, copy and paste it, and successfully log in.
 This challenge starts with the receipt. First, we use the seller information (Business Uniform Number) on the receipt to find possible stores. However, since one digit is missing, we use the Ministry of Finance's
 [Tax Registration Data Public Query](https://www.etax.nat.gov.tw/etwmain/etw113w1/ban/query)
 to guess the uniform number, trying from 0~9. We can find that the correct uniform number is `34785923`.
-![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/營業人統一編號查詢.png)
+<Image src={businessIdQuery} alt="Business ID query result" />
 Then we paste the address into Google Maps and find
 [Leshan Hot Spring Ramen](https://maps.app.goo.gl/furHXX2vzeTrpLbQA).
 Next, we use a phone to scan the QR code on the receipt to get the following text:
@@ -84,7 +91,7 @@ MF1687991111404137095000001f4000001f40000000034785923VG9sG89nFznfPnKYFRlsoA==:**
 
 We can deduce that the item name contains `蝦拉` (shrimp la-). From the ordering machine photos on Google Maps, we can find the item `蝦拉麵` (Shrimp Ramen).
 
-![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/樂山溫泉拉麵-點餐機.png)
+<Image src={ramenOrderMachine} alt="Leshan Hot Spring Ramen ordering machine" />
 
 So the flag for this challenge is `AIS3{樂山溫泉拉麵:蝦拉麵}`.
 
@@ -98,7 +105,7 @@ Then use `http://chals1.ais3.org:20963/..%2F..%2F..%2F/readable_flag_bxPfnouGLwW
 This challenge uses CSS to cover the text below to deceive people. We can directly take a screenshot and use OCR to get the flag (or type it manually).
 After being deceived, I originally thought this was done using JS event listeners, but later discovered it was actually done with CSS - quite a clever design.
 
-![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/welcome.png)
+<Image src={welcomeImg} alt="Welcome challenge screenshot" />
 
 The flag is `AIS3{Welcome_And_Enjoy_The_CTF_!}`
 
@@ -107,9 +114,9 @@ The flag is `AIS3{Welcome_And_Enjoy_The_CTF_!}`
 ### AIS3 Tiny Server - Reverse
 
 For this challenge, first put the provided binary file into Ghidra for decompilation, then directly look at the literal strings in each function. We can find
-![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/Tiny-server-Ghidra-1.png)
+<Image src={ghidra1} alt="Ghidra decompilation screenshot 1" />
 the following function. Based on the clues provided by the text content, we can directly infer that the `FUN_0001120` function in line 68 `iVar2 = FUN_0001120 (pcVar6) ;` is used to check the flag. We just need to run through the program logic of `FUN_0001120` to know the flag.
-![image](/src/assets/blog/2025_My_First_CTF_&_Pre-exam/Tiny-server-Ghidra-2.png)
+<Image src={ghidra2} alt="Ghidra decompilation screenshot 2" />
 
 The code for FUN_00011e20 is as follows:
 
