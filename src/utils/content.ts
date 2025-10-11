@@ -1,5 +1,5 @@
 import { defaultLang } from "@/i18n/ui";
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 import { IdToSlug } from "./hash";
 
 /**
@@ -50,15 +50,29 @@ export async function GetSortedPosts(lang?: string) {
     return true;
   });
 
-  let filteredPosts = allBlogPosts;
+  // Render all posts to trigger remark plugins (including reading time calculation)
+  const postsWithReadingTime = await Promise.all(
+    allBlogPosts.map(async (post) => {
+      const { remarkPluginFrontmatter } = await render(post);
+      return {
+        ...post,
+        data: {
+          ...post.data,
+          readingMetadata: remarkPluginFrontmatter.readingMetadata,
+        },
+      };
+    })
+  );
+
+  let filteredPosts = postsWithReadingTime;
 
   if (lang) {
     // Get posts for the requested language
-    const langPosts = allBlogPosts.filter(post => post.id.startsWith(`${lang}/`));
+    const langPosts = postsWithReadingTime.filter(post => post.id.startsWith(`${lang}/`));
 
     if (lang !== defaultLang) {
       // For non-default languages, get fallback posts from default language
-      const defaultPosts = allBlogPosts.filter(post => post.id.startsWith(`${defaultLang}/`));
+      const defaultPosts = postsWithReadingTime.filter(post => post.id.startsWith(`${defaultLang}/`));
 
       // Create a map of post slugs for the requested language
       const langPostSlugs = new Set(

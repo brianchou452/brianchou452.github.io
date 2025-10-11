@@ -50,10 +50,7 @@ const { lang } = Astro.params;
               image={entry.data.cover}
               lang={lang}
               readingMetadata={
-                entry.rendered
-                  ? (entry.rendered.metadata as any)?.frontmatter
-                      ?.readingMetadata
-                  : { time: 0, wordCount: 0 }
+                entry.data.readingMetadata || { time: 0, wordCount: 0 }
               }
             />
           </div>

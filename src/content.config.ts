@@ -18,6 +18,10 @@ const blog = defineCollection({
 		licenseName: z.string().optional(),
 		licenseUrl: z.string().optional(),
 		aiTranslated: z.boolean().optional(),
+		readingMetadata: z.object({
+			time: z.number(),
+			wordCount: z.number(),
+		}).optional(),
 	}),
 });
 
