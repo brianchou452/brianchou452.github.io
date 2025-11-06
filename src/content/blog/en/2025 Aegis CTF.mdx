@@ -1,0 +1,698 @@
+---
+title: 2025 Aegis Cup - Cybersecurity Competition Writeup
+published: 2025-09-27
+description: 2025 Aegis Cup - Cybersecurity Competition Writeup
+tags: [AIS3, CTF, Writeup, Web, Misc, Rev]
+category: CTF Writeup
+licenseName: "Unlicensed"
+author: 海獺
+sourceLink: "https://about.seaotter.cc/en/posts/db685cac"
+draft: false
+cover: /src/assets/blog/2025_Aegis_CTF/aegis_banner.png
+aiTranslated: true
+---
+import { Image } from "astro:assets";
+import score1 from '/src/assets/blog/2025_Aegis_CTF/AEGIS2025 · 7.01pm · 09-27.jpeg';
+import score2 from '/src/assets/blog/2025_Aegis_CTF/AEGIS2025.jpeg';
+
+
+# 2025 Aegis Cup - Cybersecurity Competition Writeup
+
+## Web
+
+### HiProxy
+
+This challenge uses HAProxy version 2.2.16, configured with ACL to filter and forward traffic to `/guest` and `/admin`.
+With the help of the great LLM, I discovered that this version of HAProxy has a known vulnerability CVE-2021-40346 (HTTP request smuggling),
+and this vulnerability can be exploited to bypass ACL checks, successfully accessing the `/admin` page to obtain the flag.
+
+## Misc
+
+### Nesting Zip
+
+This challenge provides a zip file that contains another zip file, which contains another zip file, and so on repeatedly.
+To speed up the process, I used Python's zipfile module to decompress.
+
+```python
+import zipfile
+import os
+import sys
+
+# 提高遞迴深度限制
+sys.setrecursionlimit(100000)
+
+def extract_nested_zip(zip_path, extract_to, depth=0, max_depth=100000):
+    """遞迴解壓縮，找出最終的文字檔"""
+
+    if depth > max_depth:
+        return None, f"達到最大深度 {max_depth}"
+
+    # 每 100 層印一次進度
+    if depth % 100 == 0:
+        print(f"進度: 深度 {depth}")
+
+    log = f"{'  ' * (depth % 10)}[{depth}] {os.path.basename(zip_path)}\n"
+
+    temp_dir = os.path.join(extract_to, f"L{depth}")
+    os.makedirs(temp_dir, exist_ok=True)
+
+    try:
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(temp_dir)
+
+        contents = os.listdir(temp_dir)
+
+        for item in contents:
+            item_path = os.path.join(temp_dir, item)
+
+            if item.endswith('.txt'):
+                log += f"\n{'='*60}\n找到！深度 {depth}: {item}\n{'='*60}\n"
+                with open(item_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
+                print(f"\n找到文字檔於深度 {depth}！")
+                return content, log
+
+            elif item.endswith('.zip'):
+                result, sub_log = extract_nested_zip(item_path, extract_to, depth + 1, max_depth)
+                if result:
+                    return result, log + sub_log
+
+    except Exception as e:
+        log += f"錯誤 @{depth}: {str(e)[:100]}\n"
+
+    return None, log
+
+if __name__ == "__main__":
+    zip_file = "./Nesting.zip"
+    extract_dir = "./nest_extract"
+    output_file = "./nest_final.txt"
+
+    if os.path.exists(extract_dir):
+        import shutil
+        shutil.rmtree(extract_dir)
+
+    os.makedirs(extract_dir, exist_ok=True)
+
+    print("開始解壓縮...")
+    result, log = extract_nested_zip(zip_file, extract_dir)
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        if result:
+            f.write(f"成功！文字檔內容:\n{'='*60}\n")
+            f.write(result)
+        else:
+            f.write("未找到文字檔\n")
+
+    print(f"完成！結果: {output_file}")
+```
+
+After decompression, you can find an encrypted string in `nest_final.txt`.
+The text is as follows:
+
+```txt
+vrq4tqyEs8zIoJLMoIvMk5Oghs+KoJ6gjMycjZrIoLyGncyNvJfMmaDOjKCeoMbPz5ugyJfOkcaC
+```
+
+First, I tried base64 decoding, which resulted in gibberish, then attempted XOR decryption using CyberChef's "XOR Brute Force" feature,
+trying all possible single-character keys, and finally successfully decoded the flag.
+
+CyberChef Recipe is as follows:
+
+```txt
+https://gchq.github.io/CyberChef/#recipe=From_Base64('A-Za-z0-9%2B/%3D',false,false)XOR_Brute_Force(3,8,0,'Standard',false,true,false,'AEGIS'/disabled/breakpoint)XOR(%7B'option':'Decimal','string':'255'%7D,'Standard',false)&input=dnJxNHRxeUVzOHpJb0pMTW9Jdk1rNU9naHMrS29KNmdqTXljalpySW9MeUduY3lOdkpmTW1hRE9qS0Nlb01iUHo1dWd5SmZPa2NhQw&oeol=NEL
+```
+
+Flag is as follows:
+
+```txt
+AEGIS{L37_m3_t3ll_y0u_a_s3cre7_Cyb3rCh3f_1s_a_900d_7h1n9}
+```
+
+> This challenge can also be solved by feeding it to an LLM to let it try and iterate on its own.
+
+## Reverse
+
+### Call Back
+
+This challenge is a Windows PE executable's CRT (C Runtime).
+First, I put it into Ghidra for static analysis. After clicking into the entry point, I found that the program initially calls the `FUN_140001db0` function, as follows:
+
+```c
+/* WARNING: Function: *guard*dispatch_icall replaced with injection: guard_dispatch_icall */
+int FUN_140001db0(void)
+{
+  bool bVar1;
+  int iVar2;
+  undefined8 uVar3;
+  longlong *plVar4;
+  ulonglong uVar5;
+  IMAGE_DOS_HEADER *pIVar6;
+  undefined8 unaff_RBX;
+
+  iVar2 = (int)unaff_RBX;
+  uVar3 = __scrt_initialize_crt(1);
+  if ((char)uVar3 == '\0') {
+    FUN_1400022f8(7);
+  }
+  else {
+    bVar1 = false;
+    uVar3 = __scrt_acquire_startup_lock();
+    iVar2 = (int)CONCAT71((int7)((ulonglong)unaff_RBX >> 8),(char)uVar3);
+    if (DAT_1400058d0 != 1) {
+      if (DAT_1400058d0 == 0) {
+        DAT_1400058d0 = 1;
+        iVar2 = *initterm*e(&DAT_140003300,&DAT_140003318);
+        if (iVar2 != 0) {
+          return 0xff;
+        }
+        *initterm(&DAT*1400032e8);
+        DAT_1400058d0 = 2;
+      }
+      else {
+        bVar1 = true;
+      }
+      __scrt_release_startup_lock((char)uVar3);
+      plVar4 = (longlong *)FUN_1400022e0();
+      if ((*plVar4 != 0) &&
+         (uVar5 = __scrt_is_nonwritable_in_current_image((longlong)plVar4), (char)uVar5 != '\0')) {
+        (*(code *)*plVar4)(0);
+      }
+      plVar4 = (longlong *)FUN_1400022e8();
+      if ((*plVar4 != 0) &&
+         (uVar5 = __scrt_is_nonwritable_in_current_image((longlong)plVar4), (char)uVar5 != '\0')) {
+        *register*thread_local_exe_atexit_callback(*plVar4);
+      }
+      __scrt_get_show_window_mode();
+      *get*narrow_winmain_command_line();
+      pIVar6 = &IMAGE_DOS_HEADER_140000000;
+      iVar2 = FUN_140001530((HINSTANCE)&IMAGE_DOS_HEADER_140000000);
+      uVar5 = __scrt_is_managed_app();
+      if ((char)uVar5 != '\0') {
+        if (!bVar1) {
+          _cexit();
+        }
+        __scrt_uninitialize_crt(CONCAT71((int7)((ulonglong)pIVar6 >> 8),1),'\0');
+        return iVar2;
+      }
+      goto LAB_140001f11;
+    }
+  }
+  FUN_1400022f8(7);
+LAB_140001f11:
+                    /* WARNING: Subroutine does not return */
+  exit(iVar2);
+}
+```
+
+After analyzing with LLM, I found that this function is mainly responsible for initializing the C Runtime environment and calling the `FUN_140001530` function to execute the main program logic.
+
+Next, I clicked into the `FUN_140001530` function, as follows:
+
+```c
+void FUN_140001530(HINSTANCE param_1)
+{
+  int iVar1;
+  HWND hWnd;
+  undefined1 auStackY_f8 [32];
+  WNDCLASSW local_98;
+  tagMSG local_48;
+  ulonglong local_18;
+
+  local_18 = DAT_140005008 ^ (ulonglong)auStackY_f8;
+  local_98.style = 0;
+  local_98._4_4_ = 0;
+  local_98.cbClsExtra = 0;
+  local_98.cbWndExtra = 0;
+  local_98.hIcon = (HICON)0x0;
+  local_98.hCursor = (HCURSOR)0x0;
+  local_98.hbrBackground = (HBRUSH)0x0;
+  local_98.lpszMenuName = (LPCWSTR)0x0;
+  local_98.lpfnWndProc = (WNDPROC)&LAB_1400011c0;
+  local_98.lpszClassName = L"LegitWindowClass";
+  local_98.hInstance = param_1;
+  RegisterClassW(&local_98);
+  hWnd = CreateWindowExW(0,local_98.lpszClassName,L"",0,0,0,0,0,(HWND)0x0,(HMENU)0x0,param_1,
+                         (LPVOID)0x0);
+  PostMessageW(hWnd,0x474,0,0); // 自訂訊息（WM_USER + 0x74），觸發 WndProc 中對應 case 0x474 的邏輯
+  iVar1 = GetMessageW(&local_48,(HWND)0x0,0,0);
+  while (iVar1 != 0) {
+    TranslateMessage(&local_48);
+    DispatchMessageW(&local_48);
+    iVar1 = GetMessageW(&local_48,(HWND)0x0,0,0);
+  }
+  FUN_140001ac0(local_18 ^ (ulonglong)auStackY_f8);
+  return;
+}
+```
+This function mainly creates a hidden window and immediately triggers a custom message `0x474`, then enters a loop to wait.
+
+So we can determine that the place where the flag is processed is likely in the `LAB_1400011c0` function (WndProc), at case 0x474, as follows:
+
+```c
+void UndefinedFunction_1400011c0(HWND param_1,undefined8 param_2,WPARAM param_3,LPARAM param_4)
+
+{
+  undefined4 uVar1;
+  undefined4 uVar2;
+  undefined4 uVar3;
+  undefined8 uVar4;
+  undefined8 *puVar5;
+  code *pcVar6;
+  errno_t eVar7;
+  int iVar8;
+  code *lpAddress;
+  basic_ostream<> *this;
+  longlong lVar9;
+  undefined8 *puVar10;
+  void *pvVar11;
+  code *pcVar12;
+  wchar_t *lpText;
+  undefined1 auStackY_138 [32];
+  FILE *pFStack_108;
+  void *apvStack_100 [2];
+  undefined8 uStack_f0;
+  ulonglong uStack_e8;
+  undefined8 uStack_e0;
+  undefined8 uStack_d8;
+  undefined8 uStack_d0;
+  undefined8 uStack_c8;
+  undefined8 uStack_c0;
+  undefined4 uStack_b8;
+  undefined1 uStack_b4;
+  undefined8 uStack_a8;
+  undefined8 uStack_a0;
+  undefined8 uStack_98;
+  undefined8 uStack_90;
+  undefined8 uStack_88;
+  undefined8 uStack_80;
+  undefined8 uStack_78;
+  undefined8 uStack_70;
+  undefined8 uStack_68;
+  undefined8 uStack_60;
+  undefined8 uStack_58;
+  undefined2 uStack_50;
+  ulonglong uStack_48;
+
+  uStack_48 = DAT_140005008 ^ (ulonglong)auStackY_138;
+  uStack_f0 = 0;
+  uStack_e8 = 0xf;
+  apvStack_100[0] = (void *)0x0;
+  FUN_1400016d0((longlong *)apvStack_100,param_2,0);
+  uStack_e0 = 0;
+  uStack_d8 = 0;
+  uStack_d0 = 0;
+  uStack_c8 = 0;
+  uStack_c0 = 0;
+  uStack_b8 = 0;
+  uStack_b4 = 0;
+  eVar7 = fopen_s(&pFStack_108,"flag.txt","r");
+  if ((eVar7 == 0) && (pFStack_108 != (FILE *)0x0)) {
+    fread(&uStack_e0,1,0x2c,pFStack_108);
+    uStack_b4 = 0;
+    fclose(pFStack_108);
+    uStack_a8 = 0;
+    uStack_a0 = 0;
+    uStack_98 = 0;
+    uStack_90 = 0;
+    uStack_88 = 0;
+    uStack_80 = 0;
+    uStack_78 = 0;
+    uStack_70 = 0;
+    uStack_68 = 0;
+    uStack_60 = 0;
+    uStack_58 = 0;
+    uStack_50 = 0;
+    MultiByteToWideChar(0,0,(LPCSTR)&uStack_e0,-1,(LPWSTR)&uStack_a8,0x2d);
+    lpAddress = (code *)VirtualAlloc((LPVOID)0x0,0x272,0x1000,0x40);
+    if (lpAddress == (code *)0x0) {
+      this = FUN_140001840((basic_ostream<> *)cerr_exref);
+      std::basic_ostream<>::operator<<(this,FUN_140001a00);
+    }
+    else {
+      lVar9 = 4;
+      puVar5 = (undefined8 *)&DAT_140005040;
+      pcVar6 = lpAddress;
+      do {
+        pcVar12 = pcVar6;
+        puVar10 = puVar5;
+        uVar4 = puVar10[1];
+        *(undefined8 *)pcVar12 = *puVar10;
+        *(undefined8 *)(pcVar12 + 8) = uVar4;
+        uVar4 = puVar10[3];
+        *(undefined8 *)(pcVar12 + 0x10) = puVar10[2];
+        *(undefined8 *)(pcVar12 + 0x18) = uVar4;
+        uVar4 = puVar10[5];
+        *(undefined8 *)(pcVar12 + 0x20) = puVar10[4];
+        *(undefined8 *)(pcVar12 + 0x28) = uVar4;
+        uVar4 = puVar10[7];
+        *(undefined8 *)(pcVar12 + 0x30) = puVar10[6];
+        *(undefined8 *)(pcVar12 + 0x38) = uVar4;
+        uVar4 = puVar10[9];
+        *(undefined8 *)(pcVar12 + 0x40) = puVar10[8];
+        *(undefined8 *)(pcVar12 + 0x48) = uVar4;
+        uVar4 = puVar10[0xb];
+        *(undefined8 *)(pcVar12 + 0x50) = puVar10[10];
+        *(undefined8 *)(pcVar12 + 0x58) = uVar4;
+        uVar4 = puVar10[0xd];
+        *(undefined8 *)(pcVar12 + 0x60) = puVar10[0xc];
+        *(undefined8 *)(pcVar12 + 0x68) = uVar4;
+        uVar4 = puVar10[0xf];
+        *(undefined8 *)(pcVar12 + 0x70) = puVar10[0xe];
+        *(undefined8 *)(pcVar12 + 0x78) = uVar4;
+        lVar9 = lVar9 + -1;
+        puVar5 = puVar10 + 0x10;
+        pcVar6 = pcVar12 + 0x80;
+      } while (lVar9 != 0);
+      uVar4 = puVar10[0x11];
+      *(undefined8 *)(pcVar12 + 0x80) = puVar10[0x10];
+      *(undefined8 *)(pcVar12 + 0x88) = uVar4;
+      uVar4 = puVar10[0x13];
+      *(undefined8 *)(pcVar12 + 0x90) = puVar10[0x12];
+      *(undefined8 *)(pcVar12 + 0x98) = uVar4;
+      uVar4 = puVar10[0x15];
+      *(undefined8 *)(pcVar12 + 0xa0) = puVar10[0x14];
+      *(undefined8 *)(pcVar12 + 0xa8) = uVar4;
+      uVar4 = puVar10[0x17];
+      *(undefined8 *)(pcVar12 + 0xb0) = puVar10[0x16];
+      *(undefined8 *)(pcVar12 + 0xb8) = uVar4;
+      uVar4 = puVar10[0x19];
+      *(undefined8 *)(pcVar12 + 0xc0) = puVar10[0x18];
+      *(undefined8 *)(pcVar12 + 200) = uVar4;
+      uVar1 = *(undefined4 *)((longlong)puVar10 + 0xd4);
+      uVar2 = *(undefined4 *)(puVar10 + 0x1b);
+      uVar3 = *(undefined4 *)((longlong)puVar10 + 0xdc);
+      *(undefined4 *)(pcVar12 + 0xd0) = *(undefined4 *)(puVar10 + 0x1a);
+      *(undefined4 *)(pcVar12 + 0xd4) = uVar1;
+      *(undefined4 *)(pcVar12 + 0xd8) = uVar2;
+      *(undefined4 *)(pcVar12 + 0xdc) = uVar3;
+      uVar1 = *(undefined4 *)((longlong)puVar10 + 0xe4);
+      uVar2 = *(undefined4 *)(puVar10 + 0x1d);
+      uVar3 = *(undefined4 *)((longlong)puVar10 + 0xec);
+      *(undefined4 *)(pcVar12 + 0xe0) = *(undefined4 *)(puVar10 + 0x1c);
+      *(undefined4 *)(pcVar12 + 0xe4) = uVar1;
+      *(undefined4 *)(pcVar12 + 0xe8) = uVar2;
+      *(undefined4 *)(pcVar12 + 0xec) = uVar3;
+      *(undefined2 *)(pcVar12 + 0xf0) = *(undefined2 *)(puVar10 + 0x1e);
+      if ((UINT)param_2 != 0x474) {
+        VirtualFree(lpAddress,0,0x8000);
+        DefWindowProcW(param_1,(UINT)param_2,param_3,param_4);
+        if (0xf < uStack_e8) {
+          pvVar11 = apvStack_100[0];
+          if ((uStack_e8 + 1 < 0x1000) ||
+             (pvVar11 = *(void **)((longlong)apvStack_100[0] + -8),
+             (ulonglong)((longlong)apvStack_100[0] + (-8 - (longlong)pvVar11)) < 0x20)) {
+            free(pvVar11);
+            goto LAB_140001341;
+          }
+          goto LAB_14000151e;
+        }
+        goto LAB_140001341;
+      }
+      iVar8 = (*lpAddress)(&uStack_e0);
+      lpText = L"OK right!!";
+      if (iVar8 != 1) {
+        lpText = L"Sorry......Keep it up";
+      }
+      MessageBoxW(param_1,lpText,L"<< MSG >>",0);
+      VirtualFree(lpAddress,0,0x8000);
+      PostQuitMessage(0);
+    }
+    if (uStack_e8 < 0x10) goto LAB_140001341;
+    pvVar11 = apvStack_100[0];
+    if (0xfff < uStack_e8 + 1) {
+      pvVar11 = *(void **)((longlong)apvStack_100[0] + -8);
+      lVar9 = (longlong)apvStack_100[0] - (longlong)pvVar11;
+joined_r0x000140001518:
+      if (0x1f < lVar9 - 8U) {
+LAB_14000151e:
+                    /* WARNING: Subroutine does not return */
+        _invalid_parameter_noinfo_noreturn();
+      }
+    }
+  }
+  else {
+    MessageBoxW((HWND)0x0,L"Can\'t find or open file！",L"ERROR",0x10);
+    PostQuitMessage(0);
+    if (uStack_e8 < 0x10) goto LAB_140001341;
+    pvVar11 = apvStack_100[0];
+    if (0xfff < uStack_e8 + 1) {
+      pvVar11 = *(void **)((longlong)apvStack_100[0] + -8);
+      lVar9 = (longlong)apvStack_100[0] - (longlong)pvVar11;
+      goto joined_r0x000140001518;
+    }
+  }
+  free(pvVar11);
+LAB_140001341:
+  FUN_140001ac0(uStack_48 ^ (ulonglong)auStackY_138);
+  return;
+}
+```
+
+```c
+MultiByteToWideChar(0, 0, (LPCSTR)&uStack_e0, -1,
+                    (LPWSTR)&uStack_a8, 0x2d); // 0x2d = 45 個寬字元的緩衝區。
+```
+
+At this point, we can see that this function attempts to open the `flag.txt` file and read its contents into the buffer starting at `uStack_e0`.
+Then it converts the read ASCII flag to UTF-16 and stores it in the buffer starting at `uStack_a8`.
+
+Next
+
+```c
+lpAddress = VirtualAlloc(NULL, 0x272, 0x1000, 0x40);
+//                              ^^^^  ^^^^^   ^^^^
+//                              626B  MEM_    PAGE_EXECUTE_READWRITE
+//                                    COMMIT
+```
+
+- Allocates 626 bytes of readable, writable, and executable memory
+- `0x40` = `PAGE_EXECUTE_READWRITE`: Allows shellcode execution
+
+```c
+lVar9 = 4;
+puVar5 = &DAT_140005040;  // <- 嵌入的加密 shellcode
+pcVar6 = lpAddress;
+do {
+  // 每次複製 128 bytes (0x80)
+  memcpy_unrolled(pcVar6, puVar5, 0x80);
+  lVar9--;
+  puVar5 += 0x10;
+  pcVar6 += 0x80;
+} while (lVar9 != 0);
+// 再複製剩餘的 114 bytes (626 - 512)
+```
+
+- `DAT_140005040`: Stores encrypted/obfuscated machine code (total 626 bytes)
+- Manually unrolled memcpy (compiler optimization)
+
+```c
+if ((UINT)param_2 != 0x474) {  // 非觸發訊息 -> 清理
+  VirtualFree(lpAddress, 0, 0x8000);
+  DefWindowProcW(...);
+  return;
+}
+
+// 執行 shellcode
+iVar8 = (*lpAddress)(&uStack_e0);  // <- 呼叫動態生成的函數
+                                    //   傳入 flag 字串
+
+if (iVar8 == 1) {
+  MessageBoxW(param_1, L"OK right!!", L"<< MSG >>", 0);
+} else {
+  MessageBoxW(param_1, L"Sorry......Keep it up", L"<< MSG >>", 0);
+}
+```
+
+- `lpAddress(&uStack_e0)`: Passes the flag to the dynamically generated verification function
+- return 1 → correct, 0 → incorrect
+
+#### Shellcode Analysis
+
+Now we know that the flag verification logic is in the shellcode, so we use Ghidra to select the address range from `140005040` to `1400052B1`
+(0x140005040 + 0x271 = 0x1400052B1) and force disassemble it as Code, obtaining the following result:
+
+
+```c
+undefined8 UndefinedFunction_140005132(undefined8 param_1,int *param_2)
+{
+  longlong unaff_RBP;
+
+  *param_2 = *param_2 + 1;
+  while (*(int *)(unaff_RBP + -0xb8) < 0x2b) {
+    *(undefined1 *)(unaff_RBP + -0xa0 + (longlong)*(int *)(unaff_RBP + -0xb8)) =
+         *(undefined1 *)
+          (*(longlong *)(unaff_RBP + -200) + (longlong)*(int *)(unaff_RBP + -0xb8) + 1);
+    *(undefined1 *)(unaff_RBP + -0xa0 + (longlong)(*(int *)(unaff_RBP + -0xb8) + 1)) =
+         *(undefined1 *)(*(longlong *)(unaff_RBP + -200) + (longlong)*(int *)(unaff_RBP + -0xb8));
+    *(int *)(unaff_RBP + -0xb8) = *(int *)(unaff_RBP + -0xb8) + 2;
+  }
+  *(undefined4 *)(unaff_RBP + -0xb4) = 0;
+  while (*(int *)(unaff_RBP + -0xb4) < 0x2c) {
+    *(undefined4 *)(unaff_RBP + -0xbc) = 0;
+    *(undefined4 *)(unaff_RBP + -0xb0) = 0;
+    while (*(int *)(unaff_RBP + -0xb0) < 4) {
+      *(uint *)(unaff_RBP + -0xbc) =
+           (uint)*(byte *)(unaff_RBP + -0xa0 +
+                          (longlong)(*(int *)(unaff_RBP + -0xb0) + *(int *)(unaff_RBP + -0xb4))) |
+           *(int *)(unaff_RBP + -0xbc) << 8;
+      *(int *)(unaff_RBP + -0xb0) = *(int *)(unaff_RBP + -0xb0) + 1;
+    }
+    *(uint *)(unaff_RBP + -0xa4) = (*(int *)(unaff_RBP + -0xbc) * 2 ^ 0x94e590U) + 0x14;
+    *(undefined4 *)(unaff_RBP + -0xac) = 3;
+    while (-1 < *(int *)(unaff_RBP + -0xac)) {
+      *(char *)(unaff_RBP + -0x70 +
+               (longlong)(*(int *)(unaff_RBP + -0xb4) + (3 - *(int *)(unaff_RBP + -0xac)))) =
+           (char)(*(uint *)(unaff_RBP + -0xa4) >> ((byte)(*(int *)(unaff_RBP + -0xac) << 3) & 0x1f))
+      ;
+      *(int *)(unaff_RBP + -0xac) = *(int *)(unaff_RBP + -0xac) + -1;
+    }
+    *(int *)(unaff_RBP + -0xb4) = *(int *)(unaff_RBP + -0xb4) + 4;
+  }
+  *(undefined8 *)(unaff_RBP + -0x40) = 0x6e6732f63277168a;
+  *(undefined8 *)(unaff_RBP + -0x38) = 0x426306dc420bfef2;
+  *(undefined8 *)(unaff_RBP + -0x30) = 0x5a5bfcc65c8956d8;
+  *(undefined8 *)(unaff_RBP + -0x28) = 0x62397cd2602358ea;
+  *(undefined8 *)(unaff_RBP + -0x20) = 0x42230cd8142f2ae6;
+  *(undefined4 *)(unaff_RBP + -0x18) = 0x6e1ff4c8;
+  *(undefined1 *)(unaff_RBP + -0x14) = 0;
+  *(undefined4 *)(unaff_RBP + -0xa8) = 0;
+  while( true ) {
+    if (0x2b < *(int *)(unaff_RBP + -0xa8)) {
+      return 1;
+    }
+    if (*(char *)(unaff_RBP + -0x70 + (longlong)*(int *)(unaff_RBP + -0xa8)) !=
+        *(char *)(unaff_RBP + -0x40 + (longlong)*(int *)(unaff_RBP + -0xa8))) break;
+    *(int *)(unaff_RBP + -0xa8) = *(int *)(unaff_RBP + -0xa8) + 1;
+  }
+  return 0;
+}
+```
+
+This is the complete verification logic. Feeding this decompiled result to LLM for analysis, we can get the following Python reverse engineering script:
+
+```python
+#!/usr/bin/env python3
+
+# 完整期望值
+expected_bytes_new = bytes(
+    [
+        0x8A,
+        0x16,
+        0x77,
+        0x32,
+        0xF6,
+        0x32,
+        0x67,
+        0x6E,
+        0xF2,
+        0xFE,
+        0x0B,
+        0x42,
+        0xDC,
+        0x06,
+        0x63,
+        0x42,
+        0xD8,
+        0x56,
+        0x89,
+        0x5C,
+        0xC6,
+        0xFC,
+        0x5B,
+        0x5A,
+        0xEA,
+        0x58,
+        0x23,
+        0x60,
+        0xD2,
+        0x7C,
+        0x39,
+        0x62,
+        0xE6,
+        0x2A,
+        0x2F,
+        0x14,
+        0xD8,
+        0x0C,
+        0x23,
+        0x42,
+        0xC8,
+        0xF4,
+        0x1F,
+        0x6E,
+    ]
+)
+
+
+def decode_new():
+
+    # 步驟 2 逆運算
+    after_step2 = bytearray(len(expected_bytes_new))
+
+    for i in range(0, len(expected_bytes_new), 4):
+        temp_encoded = int.from_bytes(expected_bytes_new[i : i + 4], "big")
+
+        temp = (temp_encoded - 0x14) & 0xFFFFFFFF
+        temp_xor = temp ^ 0x94E590
+
+        if temp_xor & 1:
+            print(f"⚠️  位置 {i}: 無法除以 2")
+
+        value = temp_xor >> 1
+
+        for j in range(3, -1, -1):
+            if i + (3 - j) < len(after_step2):
+                after_step2[i + (3 - j)] = (value >> (j * 8)) & 0xFF
+
+    # 步驟 1 逆運算（交換）
+    flag = bytearray(len(after_step2))
+    for i in range(0, len(after_step2) - 1, 2):
+        flag[i] = after_step2[i + 1]
+        flag[i + 1] = after_step2[i]
+
+    if len(after_step2) % 2 == 1:
+        flag[-1] = after_step2[-1]
+
+    return bytes(flag)
+
+
+# 解密
+new_flag = decode_new()
+
+print(f"Hex: {new_flag.hex()}")
+
+try:
+    decoded = new_flag.decode("ascii")
+    print(f"✅ ASCII: {decoded}")
+
+    if all(32 <= b <= 126 for b in new_flag):
+        print("✅ 全部可列印！")
+        print(f"\n🎯 真正的 Flag: {decoded}")
+    else:
+        print("⚠️  問題區域:")
+        for i in range(24, 32):
+            if new_flag[i] < 32 or new_flag[i] > 126:
+                print(f"   位置 {i}: 0x{new_flag[i]:02X}")
+
+except UnicodeDecodeError:
+    print("❌ 無法解碼")
+
+print("=" * 70)
+```
+
+The complete flag is as follows:
+
+```txt
+AEGIS{eA5y_wIn_Call64ck_function_sHeLl_c0de}
+```
+
+## Results
+
+### Team Score
+
+<Image src={score1} alt="Team Score" />
+
+### Overall Ranking
+
+<Image src={score2} alt="Overall Ranking" />
+
