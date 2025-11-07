@@ -1,6 +1,5 @@
 ---
 import "@/styles/markdown.css";
-import ImageLightbox from "./ImageLightbox.svelte";
 
 export interface Props {
   class?: string;
@@ -14,8 +13,6 @@ const { class: className } = Astro.props;
 >
   <slot />
 </div>
-
-<ImageLightbox client:only="svelte" />
 
 <script>
   const observer = new MutationObserver(() => {
