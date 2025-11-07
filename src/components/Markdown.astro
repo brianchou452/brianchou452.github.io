@@ -15,10 +15,41 @@ const { class: className } = Astro.props;
 </div>
 
 <script>
-  const observer = new MutationObserver(addPreCopyButton);
+  const observer = new MutationObserver(() => {
+    addPreCopyButton();
+    addImageClickHandlers();
+  });
   observer.observe(document.body, { childList: true, subtree: true });
 
-  document.addEventListener("DOMContentLoaded", addPreCopyButton);
+  document.addEventListener("DOMContentLoaded", () => {
+    addPreCopyButton();
+    addImageClickHandlers();
+  });
+
+  function addImageClickHandlers() {
+    // 為所有在 prose 容器中的圖片添加點擊事件
+    const proseImages = document.querySelectorAll('.prose img');
+
+    proseImages.forEach((img) => {
+      // 避免重複添加事件監聽器
+      if (img.classList.contains('lightbox-enabled')) return;
+
+      img.classList.add('lightbox-enabled');
+      img.style.cursor = 'pointer';
+
+      img.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = e.target as HTMLImageElement;
+        const src = target.src;
+        const alt = target.alt || '圖片';
+
+        // 通過 window 調用 lightbox 的 open 方法
+        if ((window as any).__openImageLightbox) {
+          (window as any).__openImageLightbox(src, alt);
+        }
+      });
+    });
+  }
 
   function addPreCopyButton() {
     observer.disconnect();
