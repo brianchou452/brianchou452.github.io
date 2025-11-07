@@ -13,6 +13,10 @@
   let startX = 0;
   let startY = 0;
 
+  // 雙指縮放相關狀態
+  let initialPinchDistance = 0;
+  let initialScale = 1;
+
   export function open(src: string, alt: string) {
     imageSrc = src;
     imageAlt = alt;
@@ -79,9 +83,20 @@
   }
 
   function handleBackdropClick(e: MouseEvent) {
-    if (e.target === e.currentTarget) {
+    // 點擊背景（黑色區域）關閉燈箱
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('lightbox-backdrop') ||
+        target.classList.contains('lightbox-container') ||
+        target.classList.contains('lightbox-image-wrapper')) {
       close();
     }
+  }
+
+  // 計算兩個觸控點之間的距離
+  function getDistance(touch1: Touch, touch2: Touch): number {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
   }
 
   function handleMouseDown(e: MouseEvent) {
@@ -105,7 +120,14 @@
   }
 
   function handleTouchStart(e: TouchEvent) {
-    if (scale > 1 && e.touches.length === 1) {
+    if (e.touches.length === 2) {
+      // 雙指縮放
+      e.preventDefault();
+      initialPinchDistance = getDistance(e.touches[0], e.touches[1]);
+      initialScale = scale;
+      isDragging = false;
+    } else if (e.touches.length === 1 && scale > 1) {
+      // 單指拖曳（僅在放大時）
       isDragging = true;
       startX = e.touches[0].clientX - translateX;
       startY = e.touches[0].clientY - translateY;
@@ -114,14 +136,31 @@
   }
 
   function handleTouchMove(e: TouchEvent) {
-    if (isDragging && e.touches.length === 1) {
+    if (e.touches.length === 2) {
+      // 雙指縮放
+      e.preventDefault();
+      const currentDistance = getDistance(e.touches[0], e.touches[1]);
+      const scaleChange = currentDistance / initialPinchDistance;
+      const newScale = Math.max(0.5, Math.min(3, initialScale * scaleChange));
+      scale = newScale;
+      isDragging = false;
+    } else if (isDragging && e.touches.length === 1) {
+      // 單指拖曳
       translateX = e.touches[0].clientX - startX;
       translateY = e.touches[0].clientY - startY;
     }
   }
 
-  function handleTouchEnd() {
-    isDragging = false;
+  function handleTouchEnd(e: TouchEvent) {
+    if (e.touches.length === 0) {
+      isDragging = false;
+      initialPinchDistance = 0;
+    } else if (e.touches.length === 1 && scale > 1) {
+      // 從雙指變為單指，重新設定拖曳
+      isDragging = true;
+      startX = e.touches[0].clientX - translateX;
+      startY = e.touches[0].clientY - translateY;
+    }
   }
 
   $effect(() => {
@@ -151,7 +190,7 @@
     aria-modal="true"
     aria-label="圖片燈箱"
   >
-    <div class="lightbox-container">
+    <div class="lightbox-container" onclick={handleBackdropClick}>
       <!-- 關閉按鈕 -->
       <button
         class="lightbox-close"
@@ -164,6 +203,13 @@
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       </button>
+
+      <!-- 圖片說明 -->
+      {#if imageAlt}
+        <div class="lightbox-caption">
+          {imageAlt}
+        </div>
+      {/if}
 
       <!-- 縮放控制 -->
       <div class="lightbox-controls">
@@ -198,7 +244,7 @@
       </div>
 
       <!-- 圖片 -->
-      <div class="lightbox-image-wrapper">
+      <div class="lightbox-image-wrapper" onclick={handleBackdropClick}>
         <img
           src={imageSrc}
           alt={imageAlt}
@@ -269,6 +315,23 @@
     background-color: rgba(255, 255, 255, 0.2);
   }
 
+  .lightbox-caption {
+    position: absolute;
+    bottom: 6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 80%;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    backdrop-filter: blur(10px);
+    text-align: center;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    z-index: 10000;
+  }
+
   .lightbox-controls {
     position: absolute;
     bottom: 2rem;
@@ -337,6 +400,13 @@
       right: 0.5rem;
       width: 2.5rem;
       height: 2.5rem;
+    }
+
+    .lightbox-caption {
+      bottom: 4.5rem;
+      max-width: 90%;
+      font-size: 0.8125rem;
+      padding: 0.5rem 1rem;
     }
 
     .lightbox-controls {
