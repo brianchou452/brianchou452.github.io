@@ -33,22 +33,93 @@ import BannerImage from "@/assets/banner.svg";
 </section>
 
 <script>
+  import { createScriptLifecycle } from "@/utils/script-lifecycle";
   import { animate } from "motion";
 
+  type AnimationCleanup = () => void;
+
+  declare global {
+    interface Window {
+      __heroBannerCleanup?: AnimationCleanup;
+    }
+  }
+
   const startAnimation = () => {
+    // Swup 會在導頁後重新執行元件內的 script。先停止上一個首頁
+    // 留下的計時器與動畫，避免每次回到首頁都多一組更新工作。
+    const lifecycle = createScriptLifecycle("__heroBannerCleanup");
+
     const texts = ["嗨嗨，", "我叫 Brian 也可以叫我海獺，", "很高興認識你！"];
+    const lineElements = texts.map((_, index) =>
+      document.getElementById(`line-${index}`),
+    ) as Array<HTMLElement | null>;
+    const cursor = document.querySelector(".cursor") as HTMLElement | null;
+    const measurementCanvas = document.createElement("canvas");
+    const measurementContext = measurementCanvas.getContext("2d");
+    const lineMeasurements = new Map<
+      number,
+      { top: number; widths: number[] }
+    >();
+
+    const refreshMeasurements = () => {
+      lineElements.forEach((element, index) => {
+        if (!element) return;
+
+        const style = getComputedStyle(element);
+        const font = `${style.fontStyle} ${style.fontVariant} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+        const widths: number[] = [0];
+
+        if (measurementContext) {
+          measurementContext.font = font;
+          let prefix = "";
+
+          for (const character of texts[index]) {
+            prefix += character;
+            widths.push(measurementContext.measureText(prefix).width);
+          }
+        }
+
+        lineMeasurements.set(index, {
+          top: element.offsetTop,
+          widths,
+        });
+      });
+    };
+
+    const { addDisposer, schedule } = lifecycle;
 
     let textIndex = 0;
     let charIndex = 0;
     let currentText = "";
 
+    const updateCursorPosition = () => {
+      if (!cursor) return;
+
+      const lineIndex =
+        textIndex >= texts.length ? texts.length - 1 : textIndex;
+      const lineElement = lineElements[lineIndex];
+      const measurement = lineMeasurements.get(lineIndex);
+
+      if (!lineElement || !measurement) return;
+
+      const currentLength = currentText.length;
+      const textWidth =
+        measurement.widths[
+          Math.min(currentLength, measurement.widths.length - 1)
+        ] || 0;
+
+      cursor.style.left = `${textWidth + 2}px`;
+      cursor.style.top = `${measurement.top}px`;
+    };
+
     function typeWriter() {
+      if (lifecycle.isDestroyed()) return;
+
       if (textIndex >= texts.length) {
         // 所有文字都打完了，重新開始動畫
-        setTimeout(() => {
+        schedule(() => {
           // 清空所有行
-          texts.forEach((_, index) => {
-            const lineElement = document.getElementById(`line-${index}`);
+          lineElements.forEach((lineElement) => {
             if (lineElement) {
               lineElement.textContent = "";
             }
@@ -68,7 +139,7 @@ import BannerImage from "@/assets/banner.svg";
 
       updateDisplay();
 
-      if (charIndex > fullText.length) {
+      if (charIndex >= fullText.length) {
         // 當前行打完，移到下一行
         textIndex++;
         charIndex = 0;
@@ -76,80 +147,38 @@ import BannerImage from "@/assets/banner.svg";
         updateCursorPosition();
 
         // 短暫停頓後繼續下一行
-        setTimeout(typeWriter, 800);
+        schedule(typeWriter, 800);
         return;
       }
 
       const speed = 100;
-      setTimeout(typeWriter, speed);
+      schedule(typeWriter, speed);
     }
 
     function updateDisplay() {
-      const currentLineElement = document.getElementById(`line-${textIndex}`);
+      const currentLineElement = lineElements[textIndex];
       if (currentLineElement) {
         currentLineElement.textContent = currentText;
       }
       updateCursorPosition();
     }
 
-    function updateCursorPosition() {
-      const cursor = document.querySelector(".cursor") as HTMLElement;
-      if (!cursor) return;
-
-      if (textIndex >= texts.length) {
-        // 所有文字打完，游標在最後一行的最後一個字後面
-        const lastLineElement = document.getElementById(
-          `line-${texts.length - 1}`
-        );
-        if (lastLineElement) {
-          // 創建臨時元素來測量最後一行文字的實際寬度
-          const tempSpan = document.createElement("span");
-          tempSpan.style.visibility = "hidden";
-          tempSpan.style.position = "absolute";
-          tempSpan.style.fontSize = getComputedStyle(lastLineElement).fontSize;
-          tempSpan.style.fontFamily =
-            getComputedStyle(lastLineElement).fontFamily;
-          tempSpan.textContent = lastLineElement.textContent || "";
-          document.body.appendChild(tempSpan);
-
-          const textWidth = tempSpan.offsetWidth;
-          document.body.removeChild(tempSpan);
-
-          cursor.style.left = `${textWidth + 2}px`;
-          cursor.style.top = `${lastLineElement.offsetTop}px`;
-        }
-      } else {
-        // 正在打字，游標跟隨當前行的當前文字末尾
-        const currentLineElement = document.getElementById(`line-${textIndex}`);
-        if (currentLineElement) {
-          // 創建臨時元素來測量當前文字的寬度
-          const tempSpan = document.createElement("span");
-          tempSpan.style.visibility = "hidden";
-          tempSpan.style.position = "absolute";
-          tempSpan.style.fontSize =
-            getComputedStyle(currentLineElement).fontSize;
-          tempSpan.style.fontFamily =
-            getComputedStyle(currentLineElement).fontFamily;
-          tempSpan.textContent = currentText;
-          document.body.appendChild(tempSpan);
-
-          const textWidth = tempSpan.offsetWidth;
-          document.body.removeChild(tempSpan);
-
-          cursor.style.left = `${textWidth + 2}px`;
-          cursor.style.top = `${currentLineElement.offsetTop}px`;
-        }
-      }
-    }
+    refreshMeasurements();
 
     // 啟動打字機效果
-    setTimeout(typeWriter, 1000);
+    schedule(typeWriter, 1000);
 
     // 視窗大小改變時重新定位游標
-    window.addEventListener("resize", updateCursorPosition);
+    const syncCursorPosition = () => {
+      refreshMeasurements();
+      updateCursorPosition();
+    };
+
+    window.addEventListener("resize", syncCursorPosition);
+    addDisposer(() => window.removeEventListener("resize", syncCursorPosition));
 
     // 標題動畫
-    animate(
+    const titleAnimation = animate(
       ".hero-title",
       {
         opacity: [0, 1],
@@ -158,11 +187,11 @@ import BannerImage from "@/assets/banner.svg";
       {
         duration: 1,
         delay: 0.5,
-      }
+      },
     );
 
     // 打字容器動畫
-    animate(
+    const typingAnimation = animate(
       ".typing-container",
       {
         opacity: [0, 1],
@@ -170,14 +199,22 @@ import BannerImage from "@/assets/banner.svg";
       {
         duration: 0.8,
         delay: 1.2,
-      }
+      },
     );
+
+    window.__heroBannerCleanup = () => {
+      lifecycle.destroy();
+      titleAnimation.stop();
+      typingAnimation.stop();
+    };
   };
 
   if (document.readyState === "complete") {
     startAnimation();
   } else {
-    document.addEventListener("DOMContentLoaded", () => startAnimation());
+    document.addEventListener("DOMContentLoaded", startAnimation, {
+      once: true,
+    });
   }
 </script>
 
@@ -191,7 +228,6 @@ import BannerImage from "@/assets/banner.svg";
     display: flex;
     flex-direction: column;
     margin-left: calc(-50vw + 50%);
-    width: 100vw;
     overflow: hidden;
   }
 

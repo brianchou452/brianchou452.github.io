@@ -10,12 +10,12 @@ const skillCategories = await getEntry("skills", `${lang}/skills`);
 
 <section
   id="skills"
-  class="py-12 my-12 bg-gradient-to-b from-[var(--background-color)] to-[var(--card-color-transparent)]"
+  class="py-12 my-12 bg-linear-to-b from-(--background-color) to-(--card-color-transparent)"
 >
   <div class="container max-w-4xl mx-auto px-6 md:px-4">
     <div class="motion-wrapper" data-motion="fadeInUp">
       <h2
-        class="text-2xl font-bold mb-8 text-center md:text-left text-[var(--text-color)]"
+        class="text-2xl font-bold mb-8 text-center md:text-left text-(--text-color)"
       >
         🛠️ Skills
       </h2>
@@ -85,55 +85,81 @@ const skillCategories = await getEntry("skills", `${lang}/skills`);
 </style>
 
 <script>
+  import { createScriptLifecycle } from "@/utils/script-lifecycle";
   import { inView } from "motion";
 
-  // 使用 motion 的 inView 來處理滾動觸發動畫
-  document.addEventListener("DOMContentLoaded", () => {
+  declare global {
+    interface Window {
+      __skillsSectionCleanup?: () => void;
+    }
+  }
+
+  const initializeAnimations = () => {
+    // Swup 導頁後會重新執行這段 script；移除前一頁留下的 observers。
+    const lifecycle = createScriptLifecycle("__skillsSectionCleanup");
+    const { addDisposer, schedule } = lifecycle;
+
     // 標題動畫
     const titleElement = document.querySelector('[data-motion="fadeInUp"]');
     if (titleElement) {
-      inView(
-        titleElement,
-        () => {
-          titleElement.classList.add("animate");
-        },
-        { amount: 0.1 }
+      addDisposer(
+        inView(
+          titleElement,
+          () => {
+            titleElement.classList.add("animate");
+          },
+          { amount: 0.1 },
+        ),
       );
     }
 
     // 容器動畫
     const containerElement = document.querySelector(
-      '[data-motion="container"]'
+      '[data-motion="container"]',
     );
     if (containerElement) {
-      inView(
-        containerElement,
-        () => {
-          containerElement.classList.add("animate");
+      addDisposer(
+        inView(
+          containerElement,
+          () => {
+            containerElement.classList.add("animate");
 
-          // 交錯動畫卡片
-          const cards = containerElement.querySelectorAll(
-            '[data-motion="slideInUp"]'
-          );
-          cards.forEach((card, index) => {
-            const delay =
-              parseFloat(card.getAttribute("data-delay") || "0") * 1000;
-            setTimeout(() => {
-              card.classList.add("animate");
+            // 交錯動畫卡片
+            const cards = containerElement.querySelectorAll(
+              '[data-motion="slideInUp"]',
+            );
+            cards.forEach((card, index) => {
+              const delay =
+                parseFloat(card.getAttribute("data-delay") || "0") * 1000;
+              schedule(() => {
+                card.classList.add("animate");
 
-              // 技能標籤動畫
-              const skillTags = card.querySelectorAll(".skill-tag");
-              skillTags.forEach((tag, tagIndex) => {
-                setTimeout(() => {
-                  (tag as HTMLElement).style.opacity = "1";
-                  (tag as HTMLElement).style.transform = "scale(1)";
-                }, tagIndex * 50);
-              });
-            }, delay);
-          });
-        },
-        { amount: 0.1 }
+                // 技能標籤動畫
+                const skillTags = card.querySelectorAll(".skill-tag");
+                skillTags.forEach((tag, tagIndex) => {
+                  schedule(() => {
+                    (tag as HTMLElement).style.opacity = "1";
+                    (tag as HTMLElement).style.transform = "scale(1)";
+                  }, tagIndex * 50);
+                });
+              }, delay);
+            });
+          },
+          { amount: 0.1 },
+        ),
       );
     }
-  });
+
+    window.__skillsSectionCleanup = () => {
+      lifecycle.destroy();
+    };
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeAnimations, {
+      once: true,
+    });
+  } else {
+    initializeAnimations();
+  }
 </script>

@@ -11,9 +11,10 @@ declare global {
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-L2Z37P1555"
 ></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag() {
-    dataLayer.push(arguments);
+  const dataLayer = window.dataLayer || (window.dataLayer = []);
+
+  function gtag(...args: unknown[]) {
+    dataLayer.push(args);
   }
   gtag("js", new Date());
 
@@ -23,30 +24,51 @@ declare global {
 <script>
   import { OverlayScrollbars } from "overlayscrollbars";
 
-  // add global scroll bar
+  type OverlayScrollbarsInstance = {
+    destroy?: () => void;
+  };
+
+  declare global {
+    interface Window {
+      __scriptSetupCleanup?: () => void;
+    }
+  }
+
   const setupScrollBar = () => {
-    OverlayScrollbars(
+    window.__scriptSetupCleanup?.();
+
+    const bodyInstance = OverlayScrollbars(
       { target: document.body, cancel: { nativeScrollbarsOverlaid: true } },
       {
         scrollbars: {
           theme: "scrollbar-base scrollbar-auto py-1",
           autoHide: "move",
         },
-      }
-    );
+      },
+    ) as OverlayScrollbarsInstance;
     document.body.classList.remove("overflow-y-hidden");
+
+    const codeBlockInstances: OverlayScrollbarsInstance[] = [];
 
     // add scrollbar for code blocks
     document.querySelectorAll("pre").forEach((ele) => {
-      OverlayScrollbars(ele, {
+      const codeBlockInstance = OverlayScrollbars(ele, {
         scrollbars: {
           theme: "scrollbar-base scrollbar-dark px-2",
           autoHide: "leave",
           autoHideDelay: 500,
           autoHideSuspend: false,
         },
-      });
+      }) as OverlayScrollbarsInstance;
+
+      codeBlockInstances.push(codeBlockInstance);
     });
+
+    window.__scriptSetupCleanup = () => {
+      bodyInstance.destroy?.();
+      codeBlockInstances.forEach((instance) => instance.destroy?.());
+      delete window.__scriptSetupCleanup;
+    };
   };
 
   // init
@@ -54,10 +76,10 @@ declare global {
     setupScrollBar();
   };
 
-  document.addEventListener("DOMContentLoaded", setup);
   if (window.swup?.hooks) {
     setup();
   } else {
+    document.addEventListener("DOMContentLoaded", setup, { once: true });
     document.addEventListener("swup:enable", () => {
       window.swup.hooks.on("content:replace", setup);
     });
