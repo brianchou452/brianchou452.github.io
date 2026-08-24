@@ -223,12 +223,9 @@ const workExperience = await getEntry("experience", `${lang}/experience`);
     }
 
     private animateTimelineItem(container: HTMLElement) {
-      const index = parseInt(container.dataset.index || "0");
-      const baseDelay = index * 120;
-
       this.schedule(() => {
         container.classList.add("animate-in");
-      }, baseDelay);
+      }, 0);
 
       const header = container.querySelector(
         "[data-timeline-header]",
@@ -236,7 +233,7 @@ const workExperience = await getEntry("experience", `${lang}/experience`);
       if (header) {
         this.schedule(() => {
           header.classList.add("animate-in");
-        }, baseDelay + 60);
+        }, 20);
       }
 
       const dot = container.querySelector(
@@ -245,7 +242,7 @@ const workExperience = await getEntry("experience", `${lang}/experience`);
       if (dot) {
         this.schedule(() => {
           dot.classList.add("animate-in");
-        }, baseDelay + 100);
+        }, 35);
       }
 
       const line = container.querySelector(
@@ -254,7 +251,7 @@ const workExperience = await getEntry("experience", `${lang}/experience`);
       if (line) {
         this.schedule(() => {
           line.classList.add("animate-in");
-        }, baseDelay + 140);
+        }, 50);
       }
 
       const children = container.querySelector(
@@ -268,12 +265,12 @@ const workExperience = await getEntry("experience", `${lang}/experience`);
             "[data-animate-achievement]",
           );
           achievements.forEach((achievement, achievementIndex) => {
-            const delay = baseDelay + 180 + achievementIndex * 60;
+            const delay = 50 + achievementIndex * 30;
             this.schedule(() => {
               (achievement as HTMLElement).classList.add("animate-in");
             }, delay);
           });
-        }, baseDelay + 160);
+        }, 65);
       }
 
       this.observer.unobserve(container);

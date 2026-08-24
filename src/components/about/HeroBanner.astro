@@ -34,7 +34,6 @@ import BannerImage from "@/assets/banner.svg";
 
 <script>
   import { createScriptLifecycle } from "@/utils/script-lifecycle";
-  import { animate } from "motion";
 
   type AnimationCleanup = () => void;
 
@@ -137,11 +136,11 @@ import BannerImage from "@/assets/banner.svg";
         updateCursorPosition();
 
         // 短暫停頓後繼續下一行
-        schedule(typeWriter, 800);
+        schedule(typeWriter, 320);
         return;
       }
 
-      const speed = 100;
+      const speed = 55;
       schedule(typeWriter, speed);
     }
 
@@ -162,7 +161,7 @@ import BannerImage from "@/assets/banner.svg";
       cursor?.classList.add("typing-complete");
     } else {
       // 只播放一次，避免使用者往下瀏覽時仍持續修改首頁 DOM。
-      schedule(typeWriter, 650);
+      schedule(typeWriter, 80);
     }
 
     // 視窗大小改變時重新定位游標
@@ -175,33 +174,19 @@ import BannerImage from "@/assets/banner.svg";
     addDisposer(() => window.removeEventListener("resize", syncCursorPosition));
 
     // 標題動畫
-    const titleAnimation = prefersReducedMotion
-      ? null
-      : animate(
-          ".hero-title",
-          {
-            opacity: [0, 1],
-            y: [24, 0],
-          },
-          {
-            duration: 0.65,
-            delay: 0.2,
-            ease: "ease-out",
-          },
-        );
+    const titleElement = document.querySelector<HTMLElement>(".hero-title");
 
-    // 打字容器動畫
-    const typingAnimation = prefersReducedMotion
+    const titleAnimation = prefersReducedMotion || !titleElement
       ? null
-      : animate(
-          ".typing-container",
+      : titleElement.animate(
+          [
+            { transform: "translateY(18px)" },
+            { transform: "translateY(0)" },
+          ],
           {
-            opacity: [0, 1],
-          },
-          {
-            duration: 0.45,
-            delay: 0.55,
-            ease: "ease-out",
+            duration: 320,
+            easing: "ease-out",
+            fill: "forwards",
           },
         );
 
@@ -217,17 +202,16 @@ import BannerImage from "@/assets/banner.svg";
 
     window.__heroBannerCleanup = () => {
       lifecycle.destroy();
-      titleAnimation?.stop();
-      typingAnimation?.stop();
+      titleAnimation?.cancel();
     };
   };
 
-  if (document.readyState === "complete") {
-    startAnimation();
-  } else {
+  if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", startAnimation, {
       once: true,
     });
+  } else {
+    startAnimation();
   }
 </script>
 
@@ -284,7 +268,7 @@ import BannerImage from "@/assets/banner.svg";
     margin: 0 0 2rem 0;
     text-shadow: none;
     font-family: var(--brand-font);
-    opacity: 0;
+    opacity: 1;
     color: var(--text-color);
   }
 
@@ -293,7 +277,7 @@ import BannerImage from "@/assets/banner.svg";
     min-height: 4rem;
     display: block;
     text-shadow: none;
-    opacity: 0;
+    opacity: 1;
     position: relative;
     color: var(--text-color-lighten);
   }

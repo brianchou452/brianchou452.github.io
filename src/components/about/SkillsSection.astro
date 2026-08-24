@@ -23,8 +23,8 @@ const skillCategories = await getEntry("skills", `${lang}/skills`);
 
     <div class="skills-container space-y-6" data-motion="container">
       {
-        skillCategories?.data.map((category, index) => (
-          <div data-motion="slideInUp" data-delay={index * 0.3}>
+        skillCategories?.data.map((category) => (
+          <div data-motion="slideInUp">
             <SkillCard
               title={category.title}
               icon={category.icon}
@@ -52,8 +52,8 @@ const skillCategories = await getEntry("skills", `${lang}/skills`);
   [data-motion="fadeInUp"] {
     transform: translateY(30px);
     transition:
-      opacity 0.6s ease-out,
-      transform 0.6s ease-out;
+      opacity 0.35s ease-out,
+      transform 0.35s ease-out;
   }
 
   [data-motion="fadeInUp"].animate {
@@ -62,15 +62,15 @@ const skillCategories = await getEntry("skills", `${lang}/skills`);
 
   /* 卡片容器動畫 */
   [data-motion="container"] {
-    transition: opacity 0.6s ease-out 0.2s;
+    transition: opacity 0.3s ease-out;
   }
 
   /* 個別卡片動畫 */
   [data-motion="slideInUp"] {
     transform: translateY(20px);
     transition:
-      opacity 0.5s ease-out,
-      transform 0.5s ease-out;
+      opacity 0.32s ease-out,
+      transform 0.32s ease-out;
   }
 
   [data-motion="slideInUp"].animate {
@@ -86,7 +86,6 @@ const skillCategories = await getEntry("skills", `${lang}/skills`);
 
 <script>
   import { createScriptLifecycle } from "@/utils/script-lifecycle";
-  import { inView } from "motion";
 
   declare global {
     interface Window {
@@ -97,19 +96,34 @@ const skillCategories = await getEntry("skills", `${lang}/skills`);
   const initializeAnimations = () => {
     // Swup 導頁後會重新執行這段 script；移除前一頁留下的 observers。
     const lifecycle = createScriptLifecycle("__skillsSectionCleanup");
-    const { addDisposer, schedule } = lifecycle;
+    const { addDisposer } = lifecycle;
+
+    const observeOnce = (
+      element: Element,
+      callback: () => void,
+      threshold: number,
+    ) => {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry?.isIntersecting) return;
+
+          callback();
+          observer.disconnect();
+        },
+        { threshold, rootMargin: "0px 0px 40px 0px" },
+      );
+
+      observer.observe(element);
+      addDisposer(() => observer.disconnect());
+    };
 
     // 標題動畫
     const titleElement = document.querySelector('[data-motion="fadeInUp"]');
     if (titleElement) {
-      addDisposer(
-        inView(
-          titleElement,
-          () => {
-            titleElement.classList.add("animate");
-          },
-          { amount: 0.1 },
-        ),
+      observeOnce(
+        titleElement,
+        () => titleElement.classList.add("animate"),
+        0.1,
       );
     }
 
@@ -118,35 +132,27 @@ const skillCategories = await getEntry("skills", `${lang}/skills`);
       '[data-motion="container"]',
     );
     if (containerElement) {
-      addDisposer(
-        inView(
-          containerElement,
-          () => {
-            containerElement.classList.add("animate");
+      observeOnce(
+        containerElement,
+        () => {
+          containerElement.classList.add("animate");
 
-            // 交錯動畫卡片
-            const cards = containerElement.querySelectorAll(
-              '[data-motion="slideInUp"]',
-            );
-            cards.forEach((card, index) => {
-              const delay =
-                parseFloat(card.getAttribute("data-delay") || "0") * 1000;
-              schedule(() => {
-                card.classList.add("animate");
+          // 卡片進入視窗後一起顯示，避免背景分頁的 timer throttling
+          // 讓使用者捲到這裡時仍需逐張等待。
+          const cards = containerElement.querySelectorAll(
+            '[data-motion="slideInUp"]',
+          );
+          cards.forEach((card) => {
+            card.classList.add("animate");
 
-                // 技能標籤動畫
-                const skillTags = card.querySelectorAll(".skill-tag");
-                skillTags.forEach((tag, tagIndex) => {
-                  schedule(() => {
-                    (tag as HTMLElement).style.opacity = "1";
-                    (tag as HTMLElement).style.transform = "scale(1)";
-                  }, tagIndex * 50);
-                });
-              }, delay);
+            const skillTags = card.querySelectorAll(".skill-tag");
+            skillTags.forEach((tag) => {
+              (tag as HTMLElement).style.opacity = "1";
+              (tag as HTMLElement).style.transform = "scale(1)";
             });
-          },
-          { amount: 0.1 },
-        ),
+          });
+        },
+        0.05,
       );
     }
 

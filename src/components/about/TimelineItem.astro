@@ -18,8 +18,8 @@ const { title, subtitle, date, isLast = false, index = 0 } = Astro.props;
     opacity: 0;
     transform: translateY(20px);
     transition:
-      opacity 0.5s ease,
-      transform 0.5s ease;
+      opacity 0.32s ease,
+      transform 0.32s ease;
   }
 
   .timeline-container.animate-in {
@@ -63,7 +63,7 @@ const { title, subtitle, date, isLast = false, index = 0 } = Astro.props;
       var(--primary-color-lighten)
     );
     height: 0;
-    transition: height 0.8s ease;
+    transition: height 0.45s ease;
   }
 
   .timeline-line.animate-in {
@@ -86,8 +86,8 @@ const { title, subtitle, date, isLast = false, index = 0 } = Astro.props;
     opacity: 0;
     transform: translateX(-20px);
     transition:
-      opacity 0.5s ease,
-      transform 0.5s ease;
+      opacity 0.32s ease,
+      transform 0.32s ease;
     margin-bottom: 0.5rem;
   }
 
@@ -113,7 +113,7 @@ const { title, subtitle, date, isLast = false, index = 0 } = Astro.props;
 
   .timeline-children {
     opacity: 0;
-    transition: opacity 0.5s ease;
+    transition: opacity 0.32s ease;
   }
 
   .timeline-children.animate-in {
