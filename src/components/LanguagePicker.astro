@@ -4,6 +4,18 @@ import { getLangFromUrl } from "../i18n/utils";
 
 // 取得當前語言
 const currentLang = getLangFromUrl(Astro.url);
+
+const getLocalizedHref = (lang: string) => {
+  const pathSegments = Astro.url.pathname.split("/");
+
+  if (pathSegments[1] in languages) {
+    pathSegments[1] = lang;
+  } else {
+    pathSegments.splice(1, 0, lang);
+  }
+
+  return `${pathSegments.join("/")}${Astro.url.search}`;
+};
 ---
 
 <div class="language-picker">
@@ -42,7 +54,7 @@ const currentLang = getLangFromUrl(Astro.url);
       {
         Object.entries(languages).map(([lang, label]) => (
           <a
-            href={`/${lang}/`}
+            href={getLocalizedHref(lang)}
             class={`dropdown-item ${lang === currentLang ? "active" : ""}`}
             data-lang={lang}
             role="menuitem"
@@ -185,7 +197,17 @@ const currentLang = getLangFromUrl(Astro.url);
 </style>
 
 <script>
+  import { createScriptLifecycle } from "@/utils/script-lifecycle";
+
+  declare global {
+    interface Window {
+      __languagePickerCleanup?: () => void;
+    }
+  }
+
   function initLanguagePicker() {
+    const lifecycle = createScriptLifecycle("__languagePickerCleanup");
+    const { addDisposer } = lifecycle;
     const dropdownButton = document.getElementById(
       "language-button"
     ) as HTMLButtonElement;
@@ -258,9 +280,12 @@ const currentLang = getLangFromUrl(Astro.url);
     }
 
     dropdownButton.addEventListener("click", toggleDropdown);
+    addDisposer(() =>
+      dropdownButton.removeEventListener("click", toggleDropdown),
+    );
 
     // 處理鍵盤導航
-    dropdownButton.addEventListener("keydown", (event: KeyboardEvent) => {
+    const handleButtonKeydown = (event: KeyboardEvent) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         toggleDropdown();
@@ -272,12 +297,16 @@ const currentLang = getLangFromUrl(Astro.url);
         ) as HTMLElement;
         firstItem?.focus();
       }
-    });
+    };
+    dropdownButton.addEventListener("keydown", handleButtonKeydown);
+    addDisposer(() =>
+      dropdownButton.removeEventListener("keydown", handleButtonKeydown),
+    );
 
     // 為下拉選項添加鍵盤導航
     const items = dropdownMenu.querySelectorAll(".dropdown-item");
     items.forEach((item, index) => {
-      item.addEventListener("keydown", (event: Event) => {
+      const handleItemKeydown = (event: Event) => {
         const keyboardEvent = event as KeyboardEvent;
         if (keyboardEvent.key === "ArrowDown") {
           event.preventDefault();
@@ -294,13 +323,21 @@ const currentLang = getLangFromUrl(Astro.url);
           closeDropdown();
           dropdownButton.focus();
         }
-      });
+      };
+      item.addEventListener("keydown", handleItemKeydown);
+      addDisposer(() =>
+        item.removeEventListener("keydown", handleItemKeydown),
+      );
     });
+
+    addDisposer(closeDropdown);
   }
 
-  // 初始化
-  document.addEventListener("DOMContentLoaded", initLanguagePicker);
-
-  // 處理 Astro 的頁面導航
-  document.addEventListener("astro:page-load", initLanguagePicker);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initLanguagePicker, {
+      once: true,
+    });
+  } else {
+    initLanguagePicker();
+  }
 </script>
