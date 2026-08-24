@@ -10,7 +10,7 @@
   let isDragging = $state(false);
   let translateX = $state(0);
   let translateY = $state(0);
-  let dialogElement: HTMLDivElement;
+  let dialogElement = $state<HTMLDivElement>();
   let startX = 0;
   let startY = 0;
 
