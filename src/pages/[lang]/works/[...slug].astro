@@ -1,6 +1,7 @@
 ---
 import FormattedDate from "@/components/FormattedDate.astro";
 import Markdown from "@/components/Markdown.astro";
+import GitHubIcon from "@/components/icons/GitHubIcon.astro";
 import AITranslationWarning from "@/components/misc/AITranslationWarning.astro";
 import { defaultLang, languages } from "@/i18n/ui";
 import { getLangFromUrl, useTranslations } from "@/i18n/utils";
@@ -172,7 +173,7 @@ const {
                 rel="noopener noreferrer"
                 class="flex items-center gap-2 px-6 py-3 bg-[var(--primary-color)] text-white rounded-lg hover:bg-[var(--primary-color-dark)] transition-colors duration-200"
               >
-                <Icon name="line-md:github-loop" size={20} class="text-white" />
+                <GitHubIcon size={20} class="text-white" />
                 {t("works.sourceCode")}
               </a>
             )

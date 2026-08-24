@@ -1,5 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
+import GitHubIcon from "@/components/icons/GitHubIcon.astro";
 
 export interface Props {
   name: string;
@@ -22,13 +23,19 @@ const ariaLabel = label ?? name;
     class="flex h-10 w-10 flex-col justify-center rounded-lg transition-all hover:brightness-75 dark:hover:brightness-125"
   >
     <div class="flex flex-row justify-center">
-      <Icon
-        name={name}
-        size={24}
-        class="text-[var(--primary-color)]"
-        aria-hidden="true"
-        focusable="false"
-      />
+      {
+        name === "line-md:github-loop" ? (
+          <GitHubIcon size={24} class="text-[var(--primary-color)]" />
+        ) : (
+          <Icon
+            name={name}
+            size={24}
+            class="text-[var(--primary-color)]"
+            aria-hidden="true"
+            focusable="false"
+          />
+        )
+      }
     </div>
   </div>
 </a>
