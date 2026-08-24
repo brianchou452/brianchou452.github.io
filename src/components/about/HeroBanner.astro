@@ -54,6 +54,9 @@ import BannerImage from "@/assets/banner.svg";
       document.getElementById(`line-${index}`),
     ) as Array<HTMLElement | null>;
     const cursor = document.querySelector(".cursor") as HTMLElement | null;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     const measurementCanvas = document.createElement("canvas");
     const measurementContext = measurementCanvas.getContext("2d");
     const lineMeasurements = new Map<
@@ -116,20 +119,7 @@ import BannerImage from "@/assets/banner.svg";
       if (lifecycle.isDestroyed()) return;
 
       if (textIndex >= texts.length) {
-        // 所有文字都打完了，重新開始動畫
-        schedule(() => {
-          // 清空所有行
-          lineElements.forEach((lineElement) => {
-            if (lineElement) {
-              lineElement.textContent = "";
-            }
-          });
-          textIndex = 0;
-          charIndex = 0;
-          currentText = "";
-          updateCursorPosition();
-          typeWriter();
-        }, 3000); // 等待3秒後重新開始
+        cursor?.classList.add("typing-complete");
         return;
       }
 
@@ -165,8 +155,15 @@ import BannerImage from "@/assets/banner.svg";
 
     refreshMeasurements();
 
-    // 啟動打字機效果
-    schedule(typeWriter, 1000);
+    if (prefersReducedMotion) {
+      lineElements.forEach((lineElement, index) => {
+        if (lineElement) lineElement.textContent = texts[index];
+      });
+      cursor?.classList.add("typing-complete");
+    } else {
+      // 只播放一次，避免使用者往下瀏覽時仍持續修改首頁 DOM。
+      schedule(typeWriter, 650);
+    }
 
     // 視窗大小改變時重新定位游標
     const syncCursorPosition = () => {
@@ -178,34 +175,50 @@ import BannerImage from "@/assets/banner.svg";
     addDisposer(() => window.removeEventListener("resize", syncCursorPosition));
 
     // 標題動畫
-    const titleAnimation = animate(
-      ".hero-title",
-      {
-        opacity: [0, 1],
-        y: [30, 0],
-      },
-      {
-        duration: 1,
-        delay: 0.5,
-      },
-    );
+    const titleAnimation = prefersReducedMotion
+      ? null
+      : animate(
+          ".hero-title",
+          {
+            opacity: [0, 1],
+            y: [24, 0],
+          },
+          {
+            duration: 0.65,
+            delay: 0.2,
+            ease: "ease-out",
+          },
+        );
 
     // 打字容器動畫
-    const typingAnimation = animate(
-      ".typing-container",
-      {
-        opacity: [0, 1],
-      },
-      {
-        duration: 0.8,
-        delay: 1.2,
-      },
-    );
+    const typingAnimation = prefersReducedMotion
+      ? null
+      : animate(
+          ".typing-container",
+          {
+            opacity: [0, 1],
+          },
+          {
+            duration: 0.45,
+            delay: 0.55,
+            ease: "ease-out",
+          },
+        );
+
+    if (prefersReducedMotion) {
+      document.querySelector<HTMLElement>(".hero-title")?.style.setProperty(
+        "opacity",
+        "1",
+      );
+      document
+        .querySelector<HTMLElement>(".typing-container")
+        ?.style.setProperty("opacity", "1");
+    }
 
     window.__heroBannerCleanup = () => {
       lifecycle.destroy();
-      titleAnimation.stop();
-      typingAnimation.stop();
+      titleAnimation?.stop();
+      typingAnimation?.stop();
     };
   };
 
@@ -310,6 +323,10 @@ import BannerImage from "@/assets/banner.svg";
     top: 0;
     left: 0;
     pointer-events: none;
+  }
+
+  .cursor.typing-complete {
+    display: none;
   }
 
   @keyframes blink {
