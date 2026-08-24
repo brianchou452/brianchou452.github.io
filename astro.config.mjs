@@ -39,18 +39,10 @@ export default defineConfig({
     }),
   ],
   i18n: {
-    locales: ["en", "zh-tw", "zh-cn", "zh-hk", "zh-hant", "zh-sg", "zh"],
+    locales: ["en", "zh-tw"],
     defaultLocale: "zh-tw",
-    fallback: {
-      "zh-cn": "zh-tw",
-      "zh-hk": "zh-tw",
-      "zh-hant": "zh-tw",
-      "zh-sg": "zh-tw",
-      zh: "zh-tw",
-    },
     routing: {
       prefixDefaultLocale: true,
-      fallbackType: "rewrite",
     },
   },
   vite: {
