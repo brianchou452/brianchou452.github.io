@@ -425,20 +425,6 @@ const processHref = (href: string) => {
     );
   });
 
-  // fold nav bar when scroll down
-  const navBarElement = document.getElementById("nav");
-  const bannerElement = document.getElementById("banner");
-  const bannerHeight = bannerElement ? bannerElement.offsetHeight - 50 : 0;
-  let lastYPos = 0;
-  window.addEventListener("scroll", () => {
-    if (bannerHeight < window.scrollY && window.scrollY > lastYPos) {
-      navBarElement!.style.top = "-72px";
-    } else {
-      navBarElement!.style.top = "0";
-    }
-    lastYPos = window.scrollY;
-  });
-
   // Keyboard a11y: ESC to close the mobile menu when open
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && isMenuOpen) {
