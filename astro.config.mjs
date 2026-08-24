@@ -17,6 +17,10 @@ import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 // https://astro.build/config
 export default defineConfig({
   site: "https://about.seaotter.cc",
+  image: {
+    // 僅處理儲存在專案內、來源可信任的 SVG 資產。
+    dangerouslyProcessSVG: true,
+  },
   integrations: [
     mdx(),
     sitemap(),
