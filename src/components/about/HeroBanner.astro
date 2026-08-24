@@ -23,13 +23,21 @@ import BannerImage from "@/assets/banner.svg";
   <div class="content-section">
     <div class="text-content">
       <h1 class="hero-title">Brian Chou</h1>
-      <div class="typing-container">
-        <div class="text-lines">
-          <div class="text-line" id="line-0"></div>
-          <div class="text-line" id="line-1"></div>
-          <div class="text-line" id="line-2"></div>
+      <div
+        class="typing-container"
+        aria-label="嗨嗨，我叫 Brian 也可以叫我海獺，很高興認識你！"
+      >
+        <div class="text-lines" aria-hidden="true">
+          <div class="text-line" data-typing-line data-text="嗨嗨，"></div>
+          <div
+            class="text-line"
+            data-typing-line
+            data-text="我叫 Brian 也可以叫我海獺，"></div>
+          <div
+            class="text-line"
+            data-typing-line
+            data-text="很高興認識你！"></div>
         </div>
-        <span class="cursor">|</span>
       </div>
     </div>
   </div>
@@ -50,134 +58,120 @@ import BannerImage from "@/assets/banner.svg";
     // Swup 會在導頁後重新執行元件內的 script。先停止上一個首頁
     // 留下的計時器與動畫，避免每次回到首頁都多一組更新工作。
     const lifecycle = createScriptLifecycle("__heroBannerCleanup");
+    const hero = document.querySelector<HTMLElement>("main .hero-banner");
 
-    const texts = ["嗨嗨，", "我叫 Brian 也可以叫我海獺，", "很高興認識你！"];
-    const lineElements = texts.map((_, index) =>
-      document.getElementById(`line-${index}`),
-    ) as Array<HTMLElement | null>;
-    const cursor = document.querySelector(".cursor") as HTMLElement | null;
+    if (!hero) return;
+
+    const lineElements = Array.from(
+      hero.querySelectorAll<HTMLElement>("[data-typing-line]"),
+    );
+    const texts = lineElements.map((element) => element.dataset.text ?? "");
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    const measurementCanvas = document.createElement("canvas");
-    const measurementContext = measurementCanvas.getContext("2d");
-    const lineMeasurements = new Map<
-      number,
-      { top: number; widths: number[] }
-    >();
+    const { addDisposer } = lifecycle;
+    const characterInterval = 50;
+    const linePause = 250;
+    const startDelay = 80;
+    const renderedLengths = texts.map(() => -1);
+    const lineStartTimes: number[] = [];
+    let nextLineStart = startDelay;
+    let activeLine = -1;
+    let animationFrame: number | null = null;
 
-    const refreshMeasurements = () => {
-      lineElements.forEach((element, index) => {
-        if (!element) return;
+    texts.forEach((text) => {
+      lineStartTimes.push(nextLineStart);
+      nextLineStart += text.length * characterInterval + linePause;
+    });
 
-        const style = getComputedStyle(element);
-        const font = `${style.fontStyle} ${style.fontVariant} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-        const widths: number[] = [0];
+    const setActiveLine = (index: number) => {
+      if (activeLine === index) return;
 
-        if (measurementContext) {
-          measurementContext.font = font;
-          let prefix = "";
+      if (activeLine >= 0) {
+        lineElements[activeLine]?.classList.remove("is-typing");
+      }
 
-          for (const character of texts[index]) {
-            prefix += character;
-            widths.push(measurementContext.measureText(prefix).width);
+      activeLine = index;
+
+      if (activeLine >= 0) {
+        lineElements[activeLine]?.classList.add("is-typing");
+      }
+    };
+
+    const renderLine = (index: number, length: number) => {
+      if (renderedLengths[index] === length) return;
+
+      renderedLengths[index] = length;
+      lineElements[index].textContent = texts[index].slice(0, length);
+    };
+
+    const animateTyping = () => {
+      const finalLine = texts.length - 1;
+      const finishedAt =
+        lineStartTimes[finalLine] + texts[finalLine].length * characterInterval;
+      let startedAt: number | null = null;
+
+      const renderFrame = (timestamp: number) => {
+        if (lifecycle.isDestroyed()) return;
+
+        startedAt ??= timestamp;
+        const elapsed = timestamp - startedAt;
+        let nextActiveLine = elapsed < startDelay ? 0 : -1;
+
+        texts.forEach((text, index) => {
+          const localElapsed = elapsed - lineStartTimes[index];
+          const visibleLength =
+            localElapsed < 0
+              ? 0
+              : Math.min(
+                  text.length,
+                  Math.floor(localElapsed / characterInterval) + 1,
+                );
+
+          renderLine(index, visibleLength);
+
+          const followingLineStart = lineStartTimes[index + 1];
+          if (
+            localElapsed >= 0 &&
+            (visibleLength < text.length ||
+              (followingLineStart !== undefined && elapsed < followingLineStart))
+          ) {
+            nextActiveLine =
+              visibleLength === text.length && followingLineStart !== undefined
+                ? index + 1
+                : index;
           }
+        });
+
+        if (elapsed >= finishedAt) {
+          texts.forEach((text, index) => renderLine(index, text.length));
+          setActiveLine(-1);
+          animationFrame = null;
+          return;
         }
 
-        lineMeasurements.set(index, {
-          top: element.offsetTop,
-          widths,
-        });
-      });
+        setActiveLine(nextActiveLine);
+        animationFrame = requestAnimationFrame(renderFrame);
+      };
+
+      setActiveLine(0);
+      animationFrame = requestAnimationFrame(renderFrame);
     };
-
-    const { addDisposer, schedule } = lifecycle;
-
-    let textIndex = 0;
-    let charIndex = 0;
-    let currentText = "";
-
-    const updateCursorPosition = () => {
-      if (!cursor) return;
-
-      const lineIndex =
-        textIndex >= texts.length ? texts.length - 1 : textIndex;
-      const lineElement = lineElements[lineIndex];
-      const measurement = lineMeasurements.get(lineIndex);
-
-      if (!lineElement || !measurement) return;
-
-      const currentLength = currentText.length;
-      const textWidth =
-        measurement.widths[
-          Math.min(currentLength, measurement.widths.length - 1)
-        ] || 0;
-
-      cursor.style.left = `${textWidth + 2}px`;
-      cursor.style.top = `${measurement.top}px`;
-    };
-
-    function typeWriter() {
-      if (lifecycle.isDestroyed()) return;
-
-      if (textIndex >= texts.length) {
-        cursor?.classList.add("typing-complete");
-        return;
-      }
-
-      const fullText = texts[textIndex];
-      currentText = fullText.substring(0, charIndex + 1);
-      charIndex++;
-
-      updateDisplay();
-
-      if (charIndex >= fullText.length) {
-        // 當前行打完，移到下一行
-        textIndex++;
-        charIndex = 0;
-        currentText = "";
-        updateCursorPosition();
-
-        // 短暫停頓後繼續下一行
-        schedule(typeWriter, 320);
-        return;
-      }
-
-      const speed = 55;
-      schedule(typeWriter, speed);
-    }
-
-    function updateDisplay() {
-      const currentLineElement = lineElements[textIndex];
-      if (currentLineElement) {
-        currentLineElement.textContent = currentText;
-      }
-      updateCursorPosition();
-    }
-
-    refreshMeasurements();
 
     if (prefersReducedMotion) {
       lineElements.forEach((lineElement, index) => {
-        if (lineElement) lineElement.textContent = texts[index];
+        lineElement.textContent = texts[index];
       });
-      cursor?.classList.add("typing-complete");
     } else {
-      // 只播放一次，避免使用者往下瀏覽時仍持續修改首頁 DOM。
-      schedule(typeWriter, 80);
+      animateTyping();
     }
 
-    // 視窗大小改變時重新定位游標
-    const syncCursorPosition = () => {
-      refreshMeasurements();
-      updateCursorPosition();
-    };
-
-    window.addEventListener("resize", syncCursorPosition);
-    addDisposer(() => window.removeEventListener("resize", syncCursorPosition));
+    addDisposer(() => {
+      if (animationFrame !== null) cancelAnimationFrame(animationFrame);
+    });
 
     // 標題動畫
-    const titleElement = document.querySelector<HTMLElement>(".hero-title");
+    const titleElement = hero.querySelector<HTMLElement>(".hero-title");
 
     const titleAnimation = prefersReducedMotion || !titleElement
       ? null
@@ -194,11 +188,11 @@ import BannerImage from "@/assets/banner.svg";
         );
 
     if (prefersReducedMotion) {
-      document.querySelector<HTMLElement>(".hero-title")?.style.setProperty(
+      hero.querySelector<HTMLElement>(".hero-title")?.style.setProperty(
         "opacity",
         "1",
       );
-      document
+      hero
         .querySelector<HTMLElement>(".typing-container")
         ?.style.setProperty("opacity", "1");
     }
@@ -300,20 +294,14 @@ import BannerImage from "@/assets/banner.svg";
     padding: 0;
   }
 
-  .cursor {
+  .text-line.is-typing::after {
+    content: "|";
     display: inline-block;
-    margin-left: 0px;
+    margin-inline-start: 2px;
     animation: blink 1s infinite;
     font-weight: bold;
     color: var(--text-color-lighten);
-    position: absolute;
-    top: 0;
-    left: 0;
     pointer-events: none;
-  }
-
-  .cursor.typing-complete {
-    display: none;
   }
 
   @keyframes blink {
@@ -396,7 +384,7 @@ import BannerImage from "@/assets/banner.svg";
 
   /* 減少動畫偏好設定支援 */
   @media (prefers-reduced-motion: reduce) {
-    .cursor {
+    .text-line.is-typing::after {
       animation: none;
     }
 
