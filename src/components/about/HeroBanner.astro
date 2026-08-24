@@ -70,10 +70,11 @@ import BannerImage from "@/assets/banner.svg";
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    const { addDisposer } = lifecycle;
+    const { addDisposer, schedule } = lifecycle;
     const characterInterval = 50;
     const linePause = 250;
     const startDelay = 80;
+    const replayDelay = 5000;
     const renderedLengths = texts.map(() => -1);
     const lineStartTimes: number[] = [];
     let nextLineStart = startDelay;
@@ -148,6 +149,11 @@ import BannerImage from "@/assets/banner.svg";
           texts.forEach((text, index) => renderLine(index, text.length));
           setActiveLine(-1);
           animationFrame = null;
+
+          schedule(() => {
+            texts.forEach((_, index) => renderLine(index, 0));
+            animateTyping();
+          }, replayDelay);
           return;
         }
 
