@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
 
   let isOpen = $state(false);
   let imageSrc = $state('');
@@ -10,6 +10,7 @@
   let isDragging = $state(false);
   let translateX = $state(0);
   let translateY = $state(0);
+  let dialogElement: HTMLDivElement;
   let startX = 0;
   let startY = 0;
 
@@ -25,6 +26,7 @@
     translateY = 0;
     isOpen = true;
     document.body.style.overflow = 'hidden';
+    void tick().then(() => dialogElement?.focus());
   }
 
   // 在 mount 時將 open 函數掛載到 window 上
@@ -165,14 +167,12 @@
 
   $effect(() => {
     if (isOpen) {
-      document.addEventListener('keydown', handleKeydown);
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
       document.addEventListener('touchmove', handleTouchMove, { passive: false });
       document.addEventListener('touchend', handleTouchEnd);
 
       return () => {
-        document.removeEventListener('keydown', handleKeydown);
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
         document.removeEventListener('touchmove', handleTouchMove);
@@ -184,13 +184,16 @@
 
 {#if isOpen}
   <div
+    bind:this={dialogElement}
     class="lightbox-backdrop"
     onclick={handleBackdropClick}
+    onkeydown={handleKeydown}
     role="dialog"
     aria-modal="true"
     aria-label="圖片燈箱"
+    tabindex="-1"
   >
-    <div class="lightbox-container" onclick={handleBackdropClick}>
+    <div class="lightbox-container">
       <!-- 關閉按鈕 -->
       <button
         class="lightbox-close"
@@ -244,18 +247,22 @@
       </div>
 
       <!-- 圖片 -->
-      <div class="lightbox-image-wrapper" onclick={handleBackdropClick}>
+      <button
+        class="lightbox-image-wrapper"
+        type="button"
+        aria-label="可縮放圖片"
+        onwheel={handleWheel}
+        onmousedown={handleMouseDown}
+        ontouchstart={handleTouchStart}
+      >
         <img
           src={imageSrc}
           alt={imageAlt}
           class="lightbox-image"
           style="transform: scale({scale}) translate({translateX / scale}px, {translateY / scale}px); cursor: {scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default'};"
-          onwheel={handleWheel}
-          onmousedown={handleMouseDown}
-          ontouchstart={handleTouchStart}
           draggable="false"
         />
-      </div>
+      </button>
     </div>
   </div>
 {/if}
@@ -377,6 +384,10 @@
   }
 
   .lightbox-image-wrapper {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: inherit;
     width: 100%;
     height: 100%;
     display: flex;

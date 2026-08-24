@@ -4,6 +4,7 @@ import sitemap from "@astrojs/sitemap";
 import svelte from "@astrojs/svelte";
 import swup from "@swup/astro";
 import tailwindcss from "@tailwindcss/vite";
+import { unified } from "@astrojs/markdown-remark";
 import icon from "astro-icon";
 import pagefind from "astro-pagefind";
 import { defineConfig } from "astro/config";
@@ -60,22 +61,24 @@ export default defineConfig({
     shikiConfig: {
       theme: "github-dark-default",
     },
-    remarkPlugins: [remarkReadingTime, remarkMath],
-    rehypePlugins: [
-      rehypeSlug,
-      rehypeKatex,
-      [
-        rehypeAutolinkHeadings,
-        {
-          // Use a small anchor before the heading text to retain original styles.
-          // Provide an aria-label so the icon-only link has an accessible name.
-          behavior: "prepend",
-          properties: {
-            className: ["heading-anchor"],
-            "aria-label": "連結到本段落",
+    processor: unified({
+      remarkPlugins: [remarkReadingTime, remarkMath],
+      rehypePlugins: [
+        rehypeSlug,
+        rehypeKatex,
+        [
+          rehypeAutolinkHeadings,
+          {
+            // Use a small anchor before the heading text to retain original styles.
+            // Provide an aria-label so the icon-only link has an accessible name.
+            behavior: "prepend",
+            properties: {
+              className: ["heading-anchor"],
+              "aria-label": "連結到本段落",
+            },
           },
-        },
+        ],
       ],
-    ],
+    }),
   },
 });
