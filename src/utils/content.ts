@@ -362,8 +362,10 @@ export async function GetSortedWorks(lang?: string) {
   }
 
   const sorted = filteredWorks.toSorted((a, b) => {
-    const dateA = new Date(a.data.started);
-    const dateB = new Date(b.data.started);
+    const dateA = a.data.started?.getTime() ?? Number.NEGATIVE_INFINITY;
+    const dateB = b.data.started?.getTime() ?? Number.NEGATIVE_INFINITY;
+
+    if (dateA === dateB) return 0;
     return dateA > dateB ? -1 : 1;
   });
 

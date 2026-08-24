@@ -34,12 +34,12 @@ const workImages = works.map((work) => ({
 }));
 
 const images = import.meta.glob<{ default: ImageMetadata }>(
-  "src/assets/works/**/*.{jpeg,jpg,png,gif}"
+  "src/assets/**/*.{jpeg,jpg,png,gif,svg}"
 );
 works.forEach((work) => {
   if (work.data.cover && !images[work.data.cover])
     throw new Error(
-      `"${work.data.cover}" does not exist in glob: "src/assets/works/**/*.{jpeg,jpg,png,gif}"`
+      `"${work.data.cover}" does not exist in the works asset glob`
     );
 });
 ---

@@ -22,7 +22,7 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const bannerTitle = t("works.title");
 const images = import.meta.glob<{ default: ImageMetadata }>(
-  "src/assets/works/**/*.{jpeg,jpg,png,gif}"
+  "src/assets/**/*.{jpeg,jpg,png,gif,svg}"
 );
 ---
 

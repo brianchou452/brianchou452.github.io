@@ -29,7 +29,7 @@ const works = defineCollection({
 	loader: glob({ base: './src/content/works', pattern: '**/*.{md,mdx}' }),
 	schema: z.object({
 		title: z.string(),
-		started: z.date(),
+		started: z.date().optional(),
 		ended: z.date().optional(),
 		description: z.string().optional(),
 		cover: z.string().optional(),

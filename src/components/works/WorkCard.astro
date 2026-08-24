@@ -12,7 +12,7 @@ interface Props {
 const { title, description, cover, tags, href } = Astro.props;
 
 const images = import.meta.glob<{ default: ImageMetadata }>(
-  "src/assets/works/**/*.{jpeg,jpg,png,gif}"
+  "src/assets/**/*.{jpeg,jpg,png,gif,svg}"
 );
 ---
 
