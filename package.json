@@ -6,7 +6,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test:e2e": "bash scripts/test-e2e-docker.sh",
+    "test:e2e:run": "playwright test"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.2.2",
@@ -37,6 +39,7 @@
     "@iconify-json/mingcute": "^1.2.8",
     "@iconify-json/ooui": "^1.2.21",
     "@iconify/svelte": "^5.2.2",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/typography": "^0.5.20",
     "@types/crypto-js": "^4.2.2",
     "github-slugger": "^2.0.0",
