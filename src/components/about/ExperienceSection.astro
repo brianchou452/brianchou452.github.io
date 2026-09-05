@@ -184,7 +184,10 @@ const workExperience = await getEntry("experience", `${lang}/experience`);
 </section>
 
 <script>
-  import { createScriptLifecycle } from "@/utils/script-lifecycle";
+  import {
+    createScriptLifecycle,
+    initializeOnPageLoad,
+  } from "@/utils/script-lifecycle";
 
   declare global {
     interface Window {
@@ -292,11 +295,5 @@ const workExperience = await getEntry("experience", `${lang}/experience`);
     };
   };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initController, {
-      once: true,
-    });
-  } else {
-    initController();
-  }
+  initializeOnPageLoad(initController);
 </script>

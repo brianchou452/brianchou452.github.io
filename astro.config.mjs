@@ -30,7 +30,6 @@ export default defineConfig({
     swup({
       theme: false,
       containers: ["main", "footer"],
-      ignore: [/.+\/$/gm, /.+\/works$/gm],
       smoothScrolling: true,
       progress: true,
       cache: true,

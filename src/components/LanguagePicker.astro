@@ -57,6 +57,7 @@ const getLocalizedHref = (lang: string) => {
             href={getLocalizedHref(lang)}
             class={`dropdown-item ${lang === currentLang ? "active" : ""}`}
             data-lang={lang}
+            data-no-swup
             role="menuitem"
             aria-label={label}
             aria-current={lang === currentLang ? "true" : undefined}
@@ -197,7 +198,10 @@ const getLocalizedHref = (lang: string) => {
 </style>
 
 <script>
-  import { createScriptLifecycle } from "@/utils/script-lifecycle";
+  import {
+    createScriptLifecycle,
+    initializeOnPageLoad,
+  } from "@/utils/script-lifecycle";
 
   declare global {
     interface Window {
@@ -333,11 +337,5 @@ const getLocalizedHref = (lang: string) => {
     addDisposer(closeDropdown);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initLanguagePicker, {
-      once: true,
-    });
-  } else {
-    initLanguagePicker();
-  }
+  initializeOnPageLoad(initLanguagePicker);
 </script>

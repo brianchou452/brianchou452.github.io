@@ -129,29 +129,55 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 </section>
 
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    // 添加點擊事件
-    document.querySelectorAll(".work-item").forEach((item) => {
-      item.addEventListener("click", () => {
+  import {
+    createScriptLifecycle,
+    initializeOnPageLoad,
+  } from "@/utils/script-lifecycle";
+
+  declare global {
+    interface Window {
+      __projectsBannerCleanup?: () => void;
+    }
+  }
+
+  const initializeProjectsBanner = () => {
+    const lifecycle = createScriptLifecycle("__projectsBannerCleanup");
+    const banner = document.querySelector(
+      "main .works-banner-row",
+    )?.parentElement;
+
+    if (!banner) return;
+
+    banner.querySelectorAll(".work-item").forEach((item) => {
+      let isNavigating = false;
+      const handleClick = () => {
         const workId = item.getAttribute("data-work-id");
         const workLang = item.getAttribute("data-work-lang");
 
-        if (workId && workLang) {
-          // 添加點擊動畫
-          (item as HTMLElement).style.transform = "scale(0.95)";
+        if (!workId || !workLang || isNavigating) return;
 
-          // 延遲跳轉以顯示動畫
-          setTimeout(() => {
-            if (window.swup) {
-              window.swup.navigate(`/${workLang}/works/${workId}`);
-            } else {
-              window.location.href = `/${workLang}/works/${workId}`;
-            }
-          }, 200);
-        }
-      });
+        isNavigating = true;
+        (item as HTMLElement).style.transform = "scale(0.95)";
+
+        lifecycle.schedule(() => {
+          if (window.swup) {
+            window.swup.navigate(`/${workLang}/works/${workId}`);
+          } else {
+            window.location.href = `/${workLang}/works/${workId}`;
+          }
+        }, 200);
+      };
+
+      item.addEventListener("click", handleClick);
+      lifecycle.addDisposer(() =>
+        item.removeEventListener("click", handleClick),
+      );
     });
-  });
+
+    window.__projectsBannerCleanup = lifecycle.destroy;
+  };
+
+  initializeOnPageLoad(initializeProjectsBanner);
 </script>
 
 <style>

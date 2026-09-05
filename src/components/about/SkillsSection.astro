@@ -85,7 +85,10 @@ const skillCategories = await getEntry("skills", `${lang}/skills`);
 </style>
 
 <script>
-  import { createScriptLifecycle } from "@/utils/script-lifecycle";
+  import {
+    createScriptLifecycle,
+    initializeOnPageLoad,
+  } from "@/utils/script-lifecycle";
 
   declare global {
     interface Window {
@@ -94,7 +97,7 @@ const skillCategories = await getEntry("skills", `${lang}/skills`);
   }
 
   const initializeAnimations = () => {
-    // Swup 導頁後會重新執行這段 script；移除前一頁留下的 observers。
+    // 每次頁面內容切換時移除上一輪留下的 observers。
     const lifecycle = createScriptLifecycle("__skillsSectionCleanup");
     const { addDisposer } = lifecycle;
 
@@ -161,11 +164,5 @@ const skillCategories = await getEntry("skills", `${lang}/skills`);
     };
   };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initializeAnimations, {
-      once: true,
-    });
-  } else {
-    initializeAnimations();
-  }
+  initializeOnPageLoad(initializeAnimations);
 </script>

@@ -2,6 +2,18 @@ type Cleanup = () => void;
 
 type CleanupWindow = Window & Record<string, Cleanup | undefined>;
 
+export function initializeOnPageLoad(initialize: () => void) {
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initialize, {
+            once: true,
+        });
+    } else {
+        initialize();
+    }
+
+    document.addEventListener("astro:page-load", initialize);
+}
+
 export function createScriptLifecycle(cleanupKey: string) {
     const targetWindow = window as unknown as CleanupWindow;
     targetWindow[cleanupKey]?.();

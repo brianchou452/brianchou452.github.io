@@ -45,7 +45,10 @@ import BannerImage from "@/assets/banner.svg";
 </section>
 
 <script>
-  import { createScriptLifecycle } from "@/utils/script-lifecycle";
+  import {
+    createScriptLifecycle,
+    initializeOnPageLoad,
+  } from "@/utils/script-lifecycle";
 
   type AnimationCleanup = () => void;
 
@@ -56,8 +59,7 @@ import BannerImage from "@/assets/banner.svg";
   }
 
   const startAnimation = () => {
-    // Swup 會在導頁後重新執行元件內的 script。先停止上一個首頁
-    // 留下的計時器與動畫，避免每次回到首頁都多一組更新工作。
+    // 每次回到首頁時先停止上一輪留下的計時器與動畫，避免重複工作。
     const lifecycle = createScriptLifecycle("__heroBannerCleanup");
     const hero = document.querySelector<HTMLElement>("main .hero-banner");
 
@@ -210,13 +212,7 @@ import BannerImage from "@/assets/banner.svg";
     };
   };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", startAnimation, {
-      once: true,
-    });
-  } else {
-    startAnimation();
-  }
+  initializeOnPageLoad(startAnimation);
 </script>
 
 <style>
